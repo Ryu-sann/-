@@ -35,14 +35,13 @@
   const level = xp => 1 + Math.floor(xp / 50);
   const attack = (xp, tier) => 16 + level(xp) * 2 + Math.max(0, tier) * 5;
   const weaponName = (id, tier) => WEAPONS.find(w => w.id === id)?.names[Math.min(3, Math.max(0, tier))] + (tier > 3 ? ' +' + (tier - 3) : '');
-  const artWeapon = (id, tier) => id === 'dual' ? 'oath' : tier === 0 ? 'worn' : tier === 1 ? 'iron' : 'dawn';
   function forgeCost(tier) {
     // -1 unlocks the other family at tier 0. No upper limit on either family.
     if (tier < 0) return { iron: 4, ember: 0 };
     return { iron: 12 + tier * 10, ember: tier === 0 ? 0 : tier * 2 };
   }
   function fresh() {
-    return { version: 4, tasks: [], events: [], main: {}, region: 0, route: 'story',
+    return { version: 4, tasks: [], goals: [], events: [], main: {}, region: 0, route: 'story',
       settings: { mute: true, volume: .25, reduced: false }, daily: {}, feedback: [],
       base: { xp: 0, iron: 0, ember: 0, tiers: { great: 0, dual: -1 }, equipped: 'great',
         stages: [0, 0, 0], health: REGIONS.map(r => r.encounters.map(e => e.hp)), unlocked: 0 },
@@ -58,11 +57,28 @@
     const n = family === 'dual' ? 3 : 1;
     return Array.from({ length: n }, (_, i) => Math.floor(total / n) + (i < total % n ? 1 : 0));
   }
+  // Boss stance changes at 2/3 and 1/3 HP: 0 = intact, 1 = cracked, 2 = broken, 3 = defeated.
+  const bossPhase = (hp, max) => !max ? 0 : hp <= 0 ? 3 : hp / max > 2 / 3 ? 0 : hp / max > 1 / 3 ? 1 : 2;
+  const PHASES = ['万全の構え', '鎧に亀裂', '鎧が砕けた', '撃破'];
+  // Visual milestones for forging. The look changes at these tiers, not only the numbers.
+  const MILESTONES = [
+    { tier: 1, label: '刃が黒鉄に変わる' }, { tier: 2, label: '外套が深紅に染まる' },
+    { tier: 3, label: '刃に熾火の光が宿る' }, { tier: 5, label: '外套に金の縁取り' },
+    { tier: 7, label: '背に光輪を背負う' }, { tier: 10, label: '黎明の輝きをまとう' }
+  ];
+  function gearLook(tier) {
+    const t = Math.max(0, tier);
+    return { blade: Math.min(3, t), cape: t >= 5 ? 2 : t >= 2 ? 1 : 0, glow: t >= 10 ? 3 : t >= 7 ? 2 : t >= 3 ? 1 : 0 };
+  }
+  const nextMilestone = tier => MILESTONES.find(m => m.tier > tier) || null;
   function replay(s) {
     const b = s.base;
     const g = { xp: b.xp, iron: b.iron, ember: b.ember, tiers: { ...b.tiers }, equipped: b.equipped,
       stages: [...b.stages], health: b.health.map(a => [...a]), unlocked: b.unlocked,
-      done: new Set(), results: [], craftResults: [], invalid: [], mainDays: new Set(b.claimedDays || []), titles: [] };
+      done: new Set(), results: [], craftResults: [], invalid: [], mainDays: new Set(b.claimedDays || []), titles: [],
+      goalCounts: {} };
+    const taskById = new Map(s.tasks.map(t => [t.id, t]));
+    const goalById = new Map((s.goals || []).map(x => [x.id, x]));
     for (const a of s.events) {
       if (a.type === 'forge') {
         const tier = g.tiers[a.weapon], cost = forgeCost(tier);
@@ -78,27 +94,52 @@
       }
       if (a.type !== 'complete' || g.done.has(a.taskId)) continue;
       g.done.add(a.taskId);
-      const region = Math.min(a.region, g.unlocked), encounter = currentEncounter(g, region);
+      const region = Math.min(a.region, g.unlocked), first = currentEncounter(g, region), encounters = REGIONS[region].encounters;
       const isMain = a.main && !g.mainDays.has(a.day);
       if (isMain) g.mainDays.add(a.day);
-      const repeat = encounter.kind === 'repeat', cache = encounter.kind === 'cache';
-      const energy = a.energy;
-      const iron = energy * (a.route === 'materials' ? 2 : 1) + REGIONS[region].iron - 1 + (isMain ? 2 : 0) + (cache ? 2 : 0);
-      const xp = energy * (repeat ? 4 : 8);
-      let ember = (isMain ? 1 : 0) + (cache ? 1 : 0);
+      const repeat = first.kind === 'repeat', energy = a.energy;
       const power = attack(g.xp, g.tiers[g.equipped]);
-      const rawDamage = Math.round(power * energy * (a.route === 'materials' ? .7 : 1));
-      const damage = cache || repeat ? 0 : Math.min(encounter.hp, rawDamage);
-      if (!cache && !repeat) g.health[region][encounter.index] -= damage;
-      const breakthrough = !repeat && (cache || g.health[region][encounter.index] === 0);
-      if (breakthrough) g.stages[region]++;
-      const victory = breakthrough && g.stages[region] === REGIONS[region].encounters.length;
+      // Excess damage carries into the following encounters. A supply cache on the way is collected.
+      let pool = repeat ? 0 : Math.round(power * energy * (a.route === 'materials' ? .7 : 1));
+      const segments = [];
+      while (!repeat && g.stages[region] < encounters.length) {
+        const e = currentEncounter(g, region);
+        if (e.kind === 'cache') {
+          if (segments.length && pool <= 0) break;
+          segments.push({ name: e.name, enemy: e.enemy, kind: 'cache', index: e.index, beforeHp: 0, maxHp: 0, damage: 0, broke: true });
+          g.stages[region]++; continue;
+        }
+        if (pool <= 0) break;
+        const dealt = Math.min(e.hp, pool);
+        g.health[region][e.index] -= dealt; pool -= dealt;
+        const after = g.health[region][e.index], broke = after === 0;
+        segments.push({ name: e.name, enemy: e.enemy, kind: e.kind, index: e.index, beforeHp: e.hp, afterHp: after, maxHp: e.maxHp, damage: dealt, broke,
+          phaseBefore: e.kind === 'boss' ? bossPhase(e.hp, e.maxHp) : 0, phaseAfter: e.kind === 'boss' ? bossPhase(after, e.maxHp) : 0 });
+        if (!broke) break;
+        g.stages[region]++;
+      }
+      const caches = segments.filter(x => x.kind === 'cache').length, damage = segments.reduce((n, x) => n + x.damage, 0);
+      const breakthrough = segments.some(x => x.broke);
+      const victory = breakthrough && g.stages[region] === encounters.length;
+      let iron = energy * (a.route === 'materials' ? 2 : 1) + REGIONS[region].iron - 1 + (isMain ? 2 : 0) + caches * 2;
+      let ember = (isMain ? 1 : 0) + caches;
+      const xp = energy * (repeat ? 4 : 8);
       if (victory) { ember += 3; g.unlocked = Math.max(g.unlocked, Math.min(2, region + 1)); }
+      // Weekly goal: a bonus once, when the completion reaches the goal's target.
+      const goal = goalById.get(taskById.get(a.taskId)?.goalId);
+      let goalDone = null;
+      if (goal) {
+        const count = (g.goalCounts[goal.id] || 0) + 1; g.goalCounts[goal.id] = count;
+        if (count === goal.target) { iron += 3; ember += 1; goalDone = goal.title; }
+      }
       g.iron += iron; g.ember += ember; g.xp += xp;
+      const boss = segments.find(x => x.kind === 'boss');
       g.results.push({ eventId: a.id, taskId: a.taskId, title: a.title, day: a.day, at: a.at,
-        region, encounter: encounter.name, encounterIndex: encounter.index, beforeHp: encounter.hp, maxHp: encounter.maxHp, enemy: encounter.enemy, kind: encounter.kind,
-        iron, ember, xp, damage, hits: hitValues(damage, g.equipped), main: isMain, cache,
-        victory, breakthrough, repeat, weapon: g.equipped, tier: g.tiers[g.equipped],
+        region, encounter: first.name, encounterIndex: first.index, beforeHp: first.hp, maxHp: first.maxHp, enemy: first.enemy, kind: first.kind,
+        segments, overflow: segments.filter(x => x.damage).length > 1, broken: segments.filter(x => x.broke && x.kind !== 'cache').map(x => x.enemy),
+        iron, ember, xp, damage, hits: hitValues(damage, g.equipped), main: isMain, cache: caches > 0,
+        victory, breakthrough, repeat, weapon: g.equipped, tier: g.tiers[g.equipped], goalDone,
+        phaseShift: boss && !boss.broke && boss.phaseAfter > boss.phaseBefore ? boss.phaseAfter : 0,
         next: currentEncounter(g, region).name, level: level(g.xp) });
     }
     g.level = level(g.xp); g.attack = attack(g.xp, g.tiers[g.equipped]);
@@ -177,10 +218,12 @@
     if (Object.entries(s.daily).some(([d, v]) => !date(d) || !object(v) || !str(v.tomorrow) || !str(v.note, 1000))) throw Error('遠征の記録が壊れています。');
     if (s.base.claimedDays && (!Array.isArray(s.base.claimedDays) || !s.base.claimedDays.every(date))) throw Error('日次記録が壊れています。');
     if (s.feedback && (!Array.isArray(s.feedback) || !s.feedback.every(f => object(f) && date(f.day) && int(f.reward, 1, 5) && int(f.entry, 1, 5) && str(f.note, 1000)))) throw Error('振り返りが壊れています。');
+    if (s.goals && (!Array.isArray(s.goals) || s.goals.length > 5000 || !s.goals.every(x => object(x) && str(x.id, 100) && x.id && str(x.seriesId, 100) && str(x.title, 100) && x.title.trim() && int(x.target, 1, 7) && date(x.week) && x.week && typeof x.weekly === 'boolean' && int(x.minutes ?? 25, 1, 240) && Number.isFinite(x.createdAt)))) throw Error('週の目標が壊れています。');
+    if (s.tasks.some(t => (t.goalId !== undefined && t.goalId !== '' && !str(t.goalId, 100)) || (t.skipped !== undefined && typeof t.skipped !== 'boolean'))) throw Error('任務データが壊れています。');
     if (s.legacyLogs && (!Array.isArray(s.legacyLogs) || !s.legacyLogs.every(l => str(l, 2000)))) throw Error('過去の記録が壊れています。');
     if (s.legacyResults && (!Array.isArray(s.legacyResults) || !s.legacyResults.every(r => object(r) && str(r.title, 100) && date(r.day) && int(r.region, 0, 2) && int(r.iron, 0, 1e9) && int(r.xp, 0, 1e9)))) throw Error('過去の成果が壊れています。');
-    s.feedback = s.feedback || []; s.legacyResults = s.legacyResults || []; s.legacyLogs = s.legacyLogs || [];
+    s.goals = s.goals || []; s.feedback = s.feedback || []; s.legacyResults = s.legacyResults || []; s.legacyLogs = s.legacyLogs || [];
     return s;
   }
-  root.EmberGame = { REGIONS, WEAPONS, fresh, replay, currentEncounter, attack, weaponName, artWeapon, forgeCost, hitValues, preview, localDay, migrate, validate };
+  root.EmberGame = { REGIONS, WEAPONS, fresh, replay, currentEncounter, attack, weaponName, forgeCost, hitValues, preview, bossPhase, PHASES, MILESTONES, gearLook, nextMilestone, localDay, migrate, validate };
 })(typeof module === 'object' ? module.exports : window);

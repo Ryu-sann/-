@@ -34,5 +34,32 @@
     }
     return changed;
   }
-  root.EmberTasks = { addDays, dayDiff, energyFor, recurrence };
+  // Weeks start on Monday (local calendar).
+  function weekStart(day) { const wd = fromDay(day).getDay(); return addDays(day, -((wd + 6) % 7)); }
+  const weekDays = day => Array.from({ length: 7 }, (_, i) => addDays(weekStart(day), i));
+  // Goals marked weekly continue into the current week. Unfinished assigned tasks move with them.
+  function rollGoals(s, day, idFactory, isDone = () => false, now = Date.now()) {
+    if (!s.goals) s.goals = [];
+    const week = weekStart(day), latest = new Map();
+    for (const g of s.goals) { const old = latest.get(g.seriesId); if (!old || g.week > old.week) latest.set(g.seriesId, g); }
+    let changed = false;
+    for (const g of latest.values()) {
+      if (g.deleted || !g.weekly || g.week >= week) continue;
+      const next = { ...g, id: idFactory(), week, createdAt: now, deleted: false };
+      s.goals.push(next); changed = true;
+      for (const t of s.tasks) if (t.goalId === g.id && !t.deleted && !isDone(t)) t.goalId = next.id;
+    }
+    return changed;
+  }
+  // "Skip this time" keeps the series; the next occurrence is still created on its date.
+  function skipOccurrence(task) { task.skipped = true; }
+  // "Stop repeating" keeps the current occurrence as a one-off and creates no further ones.
+  // Only the latest occurrence changes, so older missed occurrences stay hidden as past ones.
+  function stopSeries(s, seriesId) {
+    const series = s.tasks.filter(t => t.seriesId === seriesId);
+    const latest = series.reduce((a, t) => !a || (t.occurrence || t.scheduled) > (a.occurrence || a.scheduled) ? t : a, null);
+    if (!latest || latest.repeat === 'none') return false;
+    latest.repeat = 'none'; latest.stoppedRepeat = true; return true;
+  }
+  root.EmberTasks = { addDays, dayDiff, energyFor, recurrence, weekStart, weekDays, rollGoals, skipOccurrence, stopSeries };
 })(typeof module === 'object' ? module.exports : window);
