@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#101114">
+  <meta name="description" content="現実の一歩で剣を鍛え、闇に道を開く。任務を果たして冒険を進めるRPG。">
+  <title>EMBERQUEST — 灰の旅人</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="brand"><span data-icon="fire"></span><span>EMBERQUEST</span></div>
+    <div id="headerStats" class="header-stats"></div>
+  </header>
+  <main class="shell">
+    <section id="page-tasks" class="page active"></section>
+    <section id="page-adventure" class="page"></section>
+    <section id="page-equipment" class="page"></section>
+    <section id="page-camp" class="page"></section>
+  </main>
+  <nav class="bottomnav" aria-label="メインナビゲーション">
+    <button data-action="nav" data-view="tasks"><span data-icon="scroll"></span>任務</button>
+    <button data-action="nav" data-view="adventure"><span data-icon="map"></span>冒険</button>
+    <button data-action="nav" data-view="equipment"><span data-icon="sword"></span>装備</button>
+    <button data-action="nav" data-view="camp"><span data-icon="camp"></span>拠点</button>
+  </nav>
+
+  <dialog id="taskDialog" aria-labelledby="taskDialogTitle">
+    <form id="taskForm">
+      <div class="between"><h2 id="taskDialogTitle">任務を記す</h2><button type="button" class="iconbtn" data-action="close-task" aria-label="閉じる"><span data-icon="close"></span></button></div>
+      <p class="muted tiny" style="margin:12px 0 18px">今から行うことを、一つ。予定した工程まで進めば達成です。</p>
+      <div class="templates" aria-label="任務テンプレート">
+        <button type="button" data-action="template" data-template="study">勉強25分</button>
+        <button type="button" data-action="template" data-template="laundry">洗濯</button>
+        <button type="button" data-action="template" data-template="mail">メール返信</button>
+      </div>
+      <input name="id" type="hidden">
+      <label class="field" for="taskTitle">何を進めますか？</label>
+      <input id="taskTitle" name="title" maxlength="100" required placeholder="例：レポートの分析を進める" autocomplete="off">
+      <div class="form-grid">
+        <div><label class="field" for="taskMinutes">目安時間</label><select id="taskMinutes" name="minutes"><option value="5">5分</option><option value="10">10分</option><option value="25" selected>25分</option><option value="45">45分</option><option value="60">60分</option><option value="90">90分</option><option value="120">120分</option></select></div>
+        <div><label class="field" for="taskRepeat">繰り返し</label><select id="taskRepeat" name="repeat"><option value="none">今回だけ</option><option value="daily">毎日</option><option value="weekly">毎週・同じ曜日</option></select></div>
+      </div>
+      <p id="autoReward" class="tiny gold" style="margin-top:12px"></p>
+      <details id="taskDetails">
+        <summary>今回どこまで進める？ 締切などを設定</summary>
+        <label class="field" for="taskCondition">今回の完了条件</label><textarea id="taskCondition" name="condition" maxlength="500" placeholder="例：完成ではなく、グラフ1の傾きと単位を書く"></textarea>
+        <label class="field" for="taskStep">最初の一歩</label><input id="taskStep" name="step" maxlength="500" placeholder="例：Excelのグラフ1を開く">
+        <div class="form-grid">
+          <div><label class="field" for="taskScheduled">取り組む日（空欄＝後で）</label><input id="taskScheduled" name="scheduled" type="date"></div>
+          <div><label class="field" for="taskDue">締切（任意）</label><input id="taskDue" name="due" type="date"></div>
+          <div><label class="field" for="taskPriority">優先度</label><select id="taskPriority" name="priority"><option value="3">高い</option><option value="2" selected>普通</option><option value="1">低い</option></select></div>
+          <div><label class="field" for="taskEnergy">報酬の作業量</label><select id="taskEnergy" name="energy"><option value="auto">目安時間から自動</option><option value="1">小 · 行動力1</option><option value="2">中 · 行動力2</option><option value="4">大 · 行動力4</option></select></div>
+        </div>
+        <label class="field" for="taskProject">プロジェクト（任意）</label><input id="taskProject" name="project" maxlength="80" placeholder="例：ラボレポート">
+        <p class="tiny muted" style="margin-top:12px">繰り返しの編集は今後の回にも引き継ぎます。過去の未完了を毎日増やさず、現在の回だけを作成します。</p>
+      </details>
+      <div class="dialogactions"><button type="button" class="secondary" data-action="close-task">戻る</button><button class="primary" type="submit">任務を保存</button></div>
+    </form>
+  </dialog>
+  <dialog id="confirmDialog" aria-labelledby="confirmTitle">
+    <h2 id="confirmTitle"></h2><p id="confirmText" class="tiny muted" style="margin:20px 0"></p>
+    <div class="dialogactions"><button id="confirmNo" class="secondary">戻る</button><button id="confirmYes" class="primary">実行する</button></div>
+  </dialog>
+  <dialog id="endDialog" aria-labelledby="endTitle">
+    <div class="between"><h2 id="endTitle">本日の遠征を終える</h2><button class="iconbtn" data-action="close-end" aria-label="閉じる"><span data-icon="close"></span></button></div>
+    <form id="endForm"><div id="endSummary"></div>
+      <label class="field" for="tomorrowStep">明日の一歩（任意）</label><input id="tomorrowStep" name="tomorrow" maxlength="100" placeholder="例：考察の最初の段落を書く">
+      <label class="inline-check"><input name="plan" type="checkbox" checked>明日の主目標として予定する</label>
+      <label class="field" for="dayNote">今日のメモ（任意）</label><textarea id="dayNote" name="note" maxlength="1000" placeholder="できたことを、一言残す"></textarea>
+      <button class="primary full" style="margin-top:22px" type="submit">今日はここまで</button>
+      <p class="tiny muted" style="text-align:center;margin-top:14px">閉じたあとに任務を進めても大丈夫です。成果はすべて残ります。</p>
+    </form>
+  </dialog>
+  <div id="focusOverlay" class="focus-overlay" role="dialog" aria-modal="true" aria-labelledby="focusTitle">
+    <button data-action="leave-focus" class="ghost focus-leave">任務帳に戻る <span data-icon="close"></span></button>
+    <div id="focusInner" class="focus-inner"></div>
+  </div>
+  <div id="toast" class="toast hidden" role="status"></div>
+  <input id="importFile" type="file" accept="application/json,.json" hidden>
+  <script src="migration-v3.js"></script>
+  <script src="game.js"></script>
+  <script src="tasks.js"></script>
+  <script src="storage.js"></script>
+  <script src="art.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

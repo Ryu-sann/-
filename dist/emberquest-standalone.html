@@ -1,0 +1,1222 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#101114">
+  <meta name="description" content="現実の一歩で剣を鍛え、闇に道を開く。任務を果たして冒険を進めるRPG。">
+  <title>EMBERQUEST — 灰の旅人</title>
+  <style>
+:root {
+  --bg:#101114; --panel:#1c2025; --text:#e8e3d9; --muted:#a6adb5;
+  --line:#343940; --ember:#d97a42; --gold:#b9a16b; --red:#a44952;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;
+  color:var(--text); background:var(--bg); color-scheme:dark; font-synthesis:none;
+}
+* { box-sizing:border-box; }
+body { margin:0; background:radial-gradient(ellipse at 24% 0,#3d302025,transparent 65%),var(--bg); }
+button,input,textarea,select { font:inherit; }
+button { color:inherit; border:0; background:none; cursor:pointer; }
+button:disabled { opacity:.4; cursor:default; }
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,summary:focus-visible,a:focus-visible { outline:2px solid var(--ember); outline-offset:4px; }
+svg { vertical-align:middle; flex-shrink:0; }
+h1,h2,h3,p { margin:0; }
+h1,h2,.serif { font-family:'Iowan Old Style','Palatino Linotype','Hiragino Mincho ProN','Yu Mincho',serif; }
+h1,h2,h3,.stepbox,.source,.first-step { overflow-wrap:anywhere; }
+header { max-width:1440px; margin:auto; padding:21px 4%; display:flex; justify-content:space-between; align-items:center; gap:20px; border-bottom:1px solid #343536; }
+.brand { display:flex; align-items:center; gap:12px; font:18px Georgia,serif; letter-spacing:4px; }
+.brand svg { color:#e49a63; }
+.header-stats { display:flex; align-items:center; gap:20px; font-size:11px; color:#c8c9c7; }
+.shell { max-width:1380px; margin:auto; padding:28px 4% 110px; }
+.page { display:none; }
+.page.active { display:block; }
+.chapterbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+.chapterbar h1 { font-size:29px; font-weight:400; letter-spacing:3px; }
+.chapterbar .chapter-label { color:#b9a16b; font-size:10px; margin-bottom:8px; letter-spacing:2px; }
+.chapterbar .goal { font-size:11px; color:var(--muted); margin-top:8px; line-height:1.8; }
+.chapterindex { color:#363737; font:50px Georgia,serif; letter-spacing:-3px; }
+.home-grid { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(350px,1fr); gap:24px; align-items:start; }
+.visual-col,.action-col { min-width:0; }
+.scene { height:430px; position:relative; overflow:hidden; border:1px solid #504b43; border-radius:5px; background:#111a24; }
+.scene>svg { display:block; width:100%; height:100%; }
+.scene:after { content:''; position:absolute; inset:0; background:linear-gradient(0deg,#080c13ed,transparent 33%,transparent 75%,#0b101633); pointer-events:none; }
+.scenetop { position:absolute; z-index:2; left:20px; right:20px; top:18px; display:flex; justify-content:space-between; align-items:center; font-size:10px; color:#c8c2b8; }
+.scene-tag { padding:6px 10px; background:#121820b8; border:1px solid #776955; border-radius:2px; }
+.scene-caption { position:absolute; left:22px; right:22px; bottom:20px; z-index:2; }
+.boss-row { display:flex; justify-content:space-between; gap:10px; font-size:11px; color:#d5c5bb; margin-bottom:8px; }
+.scene-caption h2 { margin-top:12px; font-size:18px; font-weight:400; letter-spacing:2px; }
+.bar { height:4px; background:#10141a; overflow:hidden; border-radius:3px; }
+.bar>span { display:block; height:100%; background:var(--red); transition:width .55s; }
+.bar.exp>span { background:var(--gold); }
+.bar.muted-bar>span { background:#8a806c; }
+.main-task { padding:25px; background:linear-gradient(140deg,#3b2c1e55,#1c2025); border:1px solid #8f6d45; border-radius:5px; position:relative; }
+.main-task:before { content:''; position:absolute; left:25px; right:25px; top:-1px; height:1px; background:linear-gradient(90deg,transparent,#d1a365,transparent); }
+.main-label { font-size:10px; color:#d4b27e; display:flex; align-items:center; gap:7px; }
+.main-task h2 { font:500 21px/1.65 -apple-system,BlinkMacSystemFont,'Segoe UI','Yu Gothic',sans-serif; margin:14px 0 12px; }
+.stepbox { border-left:2px solid #b76e43; margin:17px 0; padding-left:13px; font-size:13px; color:#d9d3c7; line-height:1.9; }
+.stepbox .caption { display:block; font-size:10px; color:#c0a378; margin-bottom:4px; }
+.condition { font-size:11px; line-height:1.9; color:#bcc0c1; margin:12px 0 18px; }
+.main-task .tagrow { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.tag { display:inline-flex; align-items:center; gap:4px; font-size:10px; padding:4px 7px; border:1px solid #4b4c46; color:#bfc3c1; border-radius:2px; }
+.tag.urgent { color:#e2a8aa; border-color:#72464a; }
+.primary { display:inline-flex; justify-content:center; align-items:center; gap:9px; padding:12px 18px; color:#fff2e2; background:#c66e3f; border:1px solid #df8c57; border-radius:3px; font-size:12px; }
+.primary:hover { background:#db8552; }
+.primary.full { width:100%; }
+.secondary { display:inline-flex; align-items:center; justify-content:center; gap:8px; border:1px solid #555953; padding:10px 14px; border-radius:3px; background:#20252a; font-size:12px; }
+.secondary:hover { background:#2b2e30; border-color:#9d8663; }
+.ghost { display:inline-flex; align-items:center; justify-content:center; gap:6px; color:var(--muted); font-size:11px; padding:7px; }
+.ghost:hover { color:var(--text); }
+.iconbtn { padding:7px; display:inline-flex; align-items:center; justify-content:center; color:var(--muted); border-radius:3px; }
+.iconbtn:hover { background:#ffffff0b; color:#e0c392; }
+.gold { color:#cbb381; }
+.orange { color:#efa573; }
+.muted { color:var(--muted); }
+.tiny { font-size:11px; line-height:1.9; }
+.eyebrow { color:var(--gold); font:9px sans-serif; letter-spacing:2px; }
+.between { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.flex { display:flex; align-items:center; gap:10px; }
+.panel { padding:22px; background:linear-gradient(135deg,#20242a,#1a1e23); border:1px solid var(--line); border-radius:5px; }
+.reward-preview { margin:13px 0 0; padding:17px 18px; border:1px solid #4d493f; background:#26251f; display:flex; align-items:flex-start; gap:12px; border-radius:4px; }
+.reward-preview .headline { color:#e6ce9d; font-size:12px; line-height:1.8; }
+.reward-preview p { color:#bcbcaf; font-size:10px; line-height:1.9; margin-top:6px; }
+.reward-preview .icon { color:#c69c62; padding-top:2px; }
+.task-section { margin-top:24px; }
+.section-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; gap:10px; }
+.section-head h2 { font-size:17px; font-weight:400; }
+.filters { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:10px; }
+.filter { font-size:10px; color:var(--muted); padding:6px 9px; border:1px solid transparent; border-radius:3px; }
+.filter.active { color:#e2c998; border-color:#5e5542; background:#353128; }
+.task-row { display:flex; align-items:flex-start; gap:12px; padding:16px 0; border-bottom:1px solid #34383e; }
+.task-row .body { flex:1; min-width:0; }
+.task-row h3 { font-size:13px; font-weight:400; line-height:1.8; overflow-wrap:anywhere; }
+.task-row .meta { color:var(--muted); font-size:10px; display:flex; gap:9px; flex-wrap:wrap; margin-top:7px; }
+.task-row.done h3 { color:#969e9e; text-decoration:line-through; }
+.task-options { display:flex; gap:1px; align-items:center; }
+.task-options .iconbtn { padding:4px; }
+.checkbtn { border:1px solid #68706f; border-radius:50%; width:24px; height:24px; min-width:24px; margin-top:2px; display:grid; place-items:center; padding:0; }
+.checkbtn:hover { color:var(--ember); border-color:var(--ember); }
+.done .checkbtn { color:#b9c8a4; background:#424c39; border-color:#637253; }
+.empty { text-align:center; padding:23px 16px; font-size:12px; color:#adb2b7; line-height:1.9; border:1px dashed #46483f; border-radius:3px; }
+.end-link { margin-top:22px; padding-top:17px; border-top:1px solid #3f3a33; display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:10px; color:var(--muted); }
+.day-ended { padding:16px 20px; margin-bottom:15px; background:#252822; border:1px solid #5e6351; border-radius:4px; }
+.day-ended h2 { font-size:18px; font-weight:400; margin-bottom:7px; }
+.intro-copy { padding:20px 5px 0; color:#9fa8ac; font-size:12px; line-height:2; max-width:500px; }
+.first-preview { margin-top:18px; padding:15px 18px; display:flex; gap:17px; align-items:center; border:1px solid #5b4a37; background:linear-gradient(130deg,#2c241f,#191e25); border-radius:4px; }
+.first-preview>svg { width:78px; height:105px; }
+.first-preview h3 { font-size:14px; font-weight:400; font-family:serif; color:#dfc59b; margin-bottom:7px; }
+.first-preview p { font-size:11px; color:#b2b8bb; line-height:1.8; }
+.inline-result { margin:16px 0 0; padding:16px 18px; border:1px solid #6b593e; background:linear-gradient(135deg,#332b1c,#20252a); border-radius:4px; }
+.inline-result h3 { font:18px/1.7 serif; font-weight:400; margin:7px 0; }
+.inline-result .gains { display:flex; gap:15px; flex-wrap:wrap; color:#e5c183; font-size:12px; margin:9px 0; }
+.inline-result .source { font-size:10px; line-height:1.9; color:#b4b8b6; }
+.roadmap { display:flex; margin:20px 0 0; padding:20px 0; border-top:1px solid #34383d; border-bottom:1px solid #34383d; }
+.roadstop { flex:1; position:relative; text-align:center; font-size:10px; color:#9ca5ab; line-height:1.8; }
+.roadstop:before { content:''; position:absolute; height:1px; background:#4b4d4c; top:13px; left:0; right:0; }
+.roadstop:first-child:before { left:50%; }
+.roadstop:last-child:before { right:50%; }
+.roadstop>span { position:relative; display:grid; place-items:center; width:27px; height:27px; margin:auto auto 10px; border:1px solid #4b504e; background:#1b2026; border-radius:50%; }
+.roadstop.done>span { background:#7c6948; color:#e8d9bd; }
+.roadstop.active { color:#e5cc9b; }
+.roadstop.active>span { border-color:#c3945e; box-shadow:0 0 15px #e5af5820; }
+.wide-title { margin:5px 0 26px; }
+.wide-title h1 { font-size:29px; font-weight:400; letter-spacing:3px; margin-bottom:12px; }
+.wide-title p { font-size:12px; color:var(--muted); line-height:1.9; }
+.route-options { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:20px 0; }
+.route { padding:18px; border:1px solid #454b4b; border-radius:4px; text-align:left; display:flex; align-items:flex-start; gap:12px; background:#191e24; }
+.route.active { border-color:#a88b5a; background:#2c2821; }
+.route strong { display:block; font-size:13px; font-weight:500; margin-bottom:9px; }
+.route p { font-size:11px; line-height:1.8; color:var(--muted); }
+.region-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin:23px 0; }
+.region-card.selected { border-color:#92764f; }
+.region-card h2 { font-size:23px; font-weight:400; margin:13px 0; }
+.region-card p { color:var(--muted); font-size:11px; line-height:1.8; min-height:42px; }
+.region-card .secondary { margin-top:17px; width:100%; }
+.encounter-list { padding:20px; margin:18px 0; }
+.encounter-row { padding:16px 0; border-bottom:1px solid #353b40; display:flex; align-items:center; justify-content:space-between; gap:20px; }
+.encounter-row:last-child { border:0; }
+.encounter-row h3 { font-size:14px; font-weight:400; margin-bottom:8px; }
+.equipment-grid { display:grid; grid-template-columns:1fr 1.1fr; gap:27px; }
+.portrait { position:relative; text-align:center; padding:24px; background:radial-gradient(ellipse at 50% 35%,#66564580,transparent 60%),#171d24; border:1px solid #554d41; border-radius:5px; }
+.portrait .fullbody { height:390px; width:100%; display:block; }
+.portrait .name { font:23px serif; letter-spacing:4px; margin:12px 0; }
+.portrait .fullbody .knight { filter:drop-shadow(-3px -1px 3px #c5a26b40); }
+.statrow { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:#3d4347; border:1px solid #3d4347; border-radius:3px; overflow:hidden; margin-top:22px; }
+.statrow>div { padding:17px 8px; background:#1b2128; font-size:10px; color:var(--muted); }
+.statrow b { display:block; color:#d0b37a; font:24px Georgia,serif; margin-bottom:7px; }
+.weapon-selector { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
+.weapon-select { padding:13px; border:1px solid #4c504c; text-align:left; border-radius:3px; }
+.weapon-select.active { border-color:#b08e5a; background:#2b2822; }
+.weapon-select span { display:block; font-size:10px; color:var(--muted); margin-top:7px; }
+.weapon-panel { padding:23px; }
+.weapon-panel h2 { font-size:22px; font-weight:400; margin:12px 0 9px; }
+.weapon-panel .description { font-size:12px; color:var(--muted); line-height:1.9; }
+.forge-preview { margin:23px 0; display:grid; grid-template-columns:1fr 24px 1fr; align-items:center; gap:10px; }
+.forge-preview .preview-person { text-align:center; min-width:0; }
+.preview-person>svg { height:175px; width:100%; display:block; }
+.preview-person strong { display:block; font-size:11px; font-weight:400; color:#ded1b7; line-height:1.9; margin-top:8px; }
+.preview-person small { display:block; color:var(--muted); font-size:10px; }
+.preview-person.after { border:1px solid #705b3d; background:radial-gradient(ellipse at center,#90633122,transparent 70%); padding:12px 5px; border-radius:4px; }
+.costrow { padding:15px 0; border-top:1px solid #3e4140; display:flex; justify-content:space-between; font-size:12px; color:#d7c295; margin-bottom:12px; }
+.camp-grid { display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+.camp-card { margin-bottom:22px; }
+.camp-card h2 { font-size:19px; font-weight:400; margin-bottom:19px; }
+.camp-state { display:flex; align-items:center; gap:10px; padding:14px 0; border-bottom:1px solid #353b40; font-size:12px; }
+.camp-state svg { color:#bea16e; }
+.history { max-height:430px; overflow:auto; }
+.history>div { padding:14px 0; border-bottom:1px solid #343a3f; font-size:11px; line-height:1.9; overflow-wrap:anywhere; }
+.setting { display:flex; justify-content:space-between; align-items:center; padding:16px 0; border-bottom:1px solid #353a40; gap:20px; }
+.setting label { font-size:12px; line-height:1.8; }
+.setting small { display:block; font-size:10px; color:var(--muted); }
+input[type=checkbox] { accent-color:var(--ember); width:18px; height:18px; }
+input[type=range] { accent-color:var(--ember); width:100px; }
+.metrics { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.metric { padding:16px; background:#161b21; border:1px solid #373c40; color:var(--muted); font-size:10px; line-height:1.8; }
+.metric b { display:block; color:#dec292; font:24px Georgia,serif; margin-bottom:8px; }
+.daily-record { padding:17px 0; border-bottom:1px solid #383c3e; }
+.daily-record h3 { font-family:serif; font-size:17px; font-weight:400; margin-bottom:9px; }
+.daily-record p { font-size:11px; line-height:1.9; color:var(--muted); }
+.summary-part { margin:20px 0; padding-bottom:16px; border-bottom:1px solid #3c4144; }
+.summary-part h3 { font-size:12px; color:#cbb386; font-weight:500; margin-bottom:12px; }
+.summary-part ul { padding-left:18px; margin:0; font-size:12px; line-height:2; color:#d2d4ce; }
+.inline-check { display:flex; align-items:center; gap:8px; font-size:11px; color:var(--muted); margin:15px 0; }
+.bottomnav { position:fixed; z-index:20; bottom:0; left:0; right:0; background:#13171df5; backdrop-filter:blur(16px); border-top:1px solid #363c41; display:flex; justify-content:center; gap:40px; padding:8px 16px max(10px,env(safe-area-inset-bottom)); }
+.bottomnav button { display:flex; flex-direction:column; align-items:center; gap:6px; width:85px; font-size:10px; color:#a5abb0; padding:5px; }
+.bottomnav button.active { color:#e6a16c; }
+.bottomnav button.active:before { content:''; position:absolute; top:-1px; width:30px; height:2px; background:var(--ember); }
+dialog { width:490px; max-width:92vw; max-height:90dvh; background:#1c2228; color:var(--text); border:1px solid #7a6b54; border-radius:6px; padding:27px; box-shadow:0 20px 100px #000c; }
+dialog::backdrop { background:#070b10e6; backdrop-filter:blur(7px); }
+dialog h2 { font-size:23px; font-weight:400; letter-spacing:1px; }
+label.field { display:block; font-size:11px; color:#c9c9bf; margin:15px 0 8px; }
+input:not([type=checkbox]):not([type=range]),textarea,select { width:100%; padding:11px; border:1px solid #4c5359; background:#131a21; color:#e5e4dc; font-size:13px; border-radius:3px; }
+input::placeholder,textarea::placeholder { color:#929ba2; }
+textarea { min-height:65px; resize:vertical; }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:0 15px; }
+.templates { display:flex; gap:6px; flex-wrap:wrap; margin:15px 0; }
+.templates button { border:1px solid #695c45; background:#302a21; color:#d7bb8a; padding:7px 10px; font-size:11px; border-radius:3px; }
+details { margin:17px 0; }
+summary { cursor:pointer; color:#d1b37d; font-size:11px; line-height:1.9; padding:7px 0; }
+.dialogactions { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:22px; }
+.focus-overlay { position:fixed; inset:0; z-index:40; display:none; align-items:center; justify-content:center; background:radial-gradient(ellipse at 50% 90%,#54321f44,transparent 60%),#101114; padding:28px; overflow:auto; }
+.focus-overlay.visible { display:flex; }
+.focus-leave { position:absolute; right:22px; top:23px; }
+.focus-inner { width:100%; max-width:520px; text-align:center; }
+.focus-inner h2 { font-size:28px; font-weight:400; line-height:1.8; margin:25px 0 20px; }
+.first-step { padding:21px; border-top:1px solid #4e473d; border-bottom:1px solid #4e473d; font-size:14px; color:#d7c8ab; line-height:1.9; margin:20px 0; }
+.focus-inner p { color:#b8c0c2; font-size:12px; line-height:2; }
+.timer { font:64px Georgia,serif; letter-spacing:3px; margin:22px 0 15px; color:#e4c9a2; font-variant-numeric:tabular-nums; }
+.focus-inner .primary { margin-top:25px; }
+.focus-note { font-size:10px!important; margin-top:20px; }
+.toast { position:fixed; bottom:95px; left:50%; transform:translateX(-50%); max-width:90vw; z-index:80; border:1px solid #95805e; border-radius:4px; background:#2a2b27; color:#ebd5ad; padding:13px 20px; font-size:12px; line-height:1.8; box-shadow:0 10px 30px #0009; }
+.hidden { display:none!important; }
+.animation-message { position:absolute; inset:40% 20px auto; text-align:center; color:#f4c486; font:24px serif; letter-spacing:2px; text-shadow:0 3px 16px #000; z-index:4; pointer-events:none; }
+.damage-number { position:absolute; left:70%; top:34%; color:#ffe2b1; font:32px Georgia,serif; opacity:0; z-index:5; text-shadow:0 2px 8px #000; }
+.scene.striking .damage-number { animation:damage .9s .45s ease-out; }
+.slash { opacity:0; stroke-dasharray:500; stroke-dashoffset:500; }
+.scene.striking .slash { animation:slash .7s .35s ease-out; }
+.scene.striking:not(.dual) .slash.second { display:none; }
+.scene.striking.dual .slash { animation:slash .4s .15s ease-out 3; }
+.scene.striking.dual .slash.second { animation-delay:.3s; }
+.scene.striking .hero-stage { animation:lunge .8s ease-in-out; }
+.scene.striking .blade { animation:swing .8s ease-in-out; transform-origin:155px 115px; }
+.scene.striking .enemy-figure { animation:hit .5s .6s ease-out; }
+.scene.striking.dual .enemy-figure { animation:hit .4s .25s 3 ease-out; }
+.scene .embers { animation:embers 7s infinite ease-in-out; }
+.scene .mist { animation:mist 15s infinite alternate ease-in-out; }
+.flame { animation:flame 1.7s infinite alternate; transform-origin:50% 90%; }
+.scene .cloak { animation:cloak 7s infinite alternate; transform-origin:100px 90px; }
+.after-forge .fullbody { animation:forged 1.6s ease-out; }
+.reduced *, .reduced *:before, .reduced *:after { animation:none!important; transition:none!important; }
+@keyframes slash { 10%{opacity:1}70%{opacity:1;stroke-dashoffset:0}100%{opacity:0;stroke-dashoffset:0} }
+@keyframes lunge { 45%{transform:translate(125px,99px) scale(1.18)} }
+@keyframes swing { 40%{transform:rotate(13deg)}65%{transform:rotate(-18deg)} }
+@keyframes hit { 35%{filter:brightness(1.9);transform:translateX(7px)} }
+@keyframes damage { 20%{opacity:1}75%{opacity:1;transform:translateY(-22px)}100%{opacity:0;transform:translateY(-35px)} }
+@keyframes embers { 50%{transform:translate(5px,-12px);opacity:.3} }
+@keyframes mist { to{transform:translateX(-45px)} }
+@keyframes flame { to{opacity:.6;transform:skewX(4deg)} }
+@keyframes cloak { to{transform:skewX(-1.4deg)} }
+@keyframes forged { 15%{filter:brightness(1.6) drop-shadow(0 0 15px #e5b477)} }
+@media(min-width:901px) {
+  .home-grid .visual-col { position:sticky; top:20px; }
+  .main-task { min-height:260px; }
+  .desktop-legend { display:block; }
+}
+@media(max-width:900px) {
+  header { padding:16px 5%; }
+  .brand { font-size:16px; letter-spacing:3px; }
+  .header-stats { font-size:10px; gap:12px; }
+  .header-title { display:none; }
+  .shell { padding:16px 5% 110px; }
+  .chapterbar { margin-bottom:12px; }
+  .chapterbar h1 { font-size:22px; letter-spacing:2px; }
+  .chapterbar .chapter-label { font-size:9px; margin-bottom:6px; }
+  .chapterbar .goal,.chapterindex { display:none; }
+  .home-grid { grid-template-columns:1fr; gap:14px; }
+  .scene { height:205px; }
+  .scenetop { top:11px; left:13px; right:13px; font-size:9px; }
+  .scene-tag { padding:4px 7px; font-size:9px; }
+  .scene-caption { bottom:12px; left:14px; right:14px; }
+  .scene-caption h2 { display:none; }
+  .boss-row { font-size:10px; margin-bottom:7px; }
+  .scene .hero-stage { transform:translate(125px,75px) scale(.96); }
+  .scene .enemy-figure { transform:translateY(-15px); }
+  .main-task { padding:17px 18px; }
+  .main-task h2 { font-size:18px; margin:10px 0; }
+  .stepbox { font-size:12px; margin:12px 0; }
+  .stepbox .caption { display:none; }
+  .condition { font-size:10px; margin:10px 0 13px; }
+  .main-label { font-size:9px; }
+  .reward-preview { margin-top:11px; padding:12px 14px; gap:10px; }
+  .reward-preview .headline { font-size:11px; }
+  .reward-preview p { font-size:10px; margin-top:4px; }
+  .task-section { margin-top:22px; }
+  .section-head { margin-bottom:12px; }
+  .section-head h2 { font-size:16px; }
+  .intro-copy { display:none; }
+  .first-preview { padding:12px; margin-top:13px; }
+  .first-preview>svg { height:83px; width:62px; }
+  .first-preview h3 { font-size:13px; }
+  .first-preview p { font-size:10px; }
+  .inline-result { padding:14px 16px; margin-top:12px; }
+  .inline-result h3 { font-size:16px; }
+  .roadmap { margin-top:15px; }
+  .route-options { gap:10px; }
+  .route { padding:14px; gap:9px; }
+  .route strong { font-size:12px; }
+  .region-grid,.equipment-grid,.camp-grid { grid-template-columns:1fr; }
+  .portrait .fullbody { height:330px; }
+  .portrait { padding:20px; }
+  .wide-title { margin:5px 0 22px; }
+  .wide-title h1 { font-size:25px; }
+  .wide-title p { font-size:11px; }
+  .bottomnav { justify-content:space-around; gap:10px; }
+  .bottomnav button { width:70px; }
+  .weapon-panel { padding:20px; }
+  .focus-inner h2 { font-size:24px; }
+  .timer { font-size:56px; }
+  .animation-message { font-size:19px; }
+  .damage-number { font-size:24px; }
+}
+@media(max-width:400px) {
+  .shell { padding-left:4%; padding-right:4%; }
+  .brand { font-size:14px; }
+  .header-stats .iron-label { display:none; }
+  .scene { height:180px; }
+  .main-task h2 { font-size:17px; }
+  .task-row { gap:8px; }
+  .task-options .iconbtn { padding:3px; }
+  dialog { padding:22px; }
+  .forge-preview { gap:5px; grid-template-columns:1fr 17px 1fr; }
+  .preview-person>svg { height:155px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  *,*:before,*:after { animation:none!important; transition:none!important; }
+}
+
+</style>
+</head>
+<body>
+  <header>
+    <div class="brand"><span data-icon="fire"></span><span>EMBERQUEST</span></div>
+    <div id="headerStats" class="header-stats"></div>
+  </header>
+  <main class="shell">
+    <section id="page-tasks" class="page active"></section>
+    <section id="page-adventure" class="page"></section>
+    <section id="page-equipment" class="page"></section>
+    <section id="page-camp" class="page"></section>
+  </main>
+  <nav class="bottomnav" aria-label="メインナビゲーション">
+    <button data-action="nav" data-view="tasks"><span data-icon="scroll"></span>任務</button>
+    <button data-action="nav" data-view="adventure"><span data-icon="map"></span>冒険</button>
+    <button data-action="nav" data-view="equipment"><span data-icon="sword"></span>装備</button>
+    <button data-action="nav" data-view="camp"><span data-icon="camp"></span>拠点</button>
+  </nav>
+
+  <dialog id="taskDialog" aria-labelledby="taskDialogTitle">
+    <form id="taskForm">
+      <div class="between"><h2 id="taskDialogTitle">任務を記す</h2><button type="button" class="iconbtn" data-action="close-task" aria-label="閉じる"><span data-icon="close"></span></button></div>
+      <p class="muted tiny" style="margin:12px 0 18px">今から行うことを、一つ。予定した工程まで進めば達成です。</p>
+      <div class="templates" aria-label="任務テンプレート">
+        <button type="button" data-action="template" data-template="study">勉強25分</button>
+        <button type="button" data-action="template" data-template="laundry">洗濯</button>
+        <button type="button" data-action="template" data-template="mail">メール返信</button>
+      </div>
+      <input name="id" type="hidden">
+      <label class="field" for="taskTitle">何を進めますか？</label>
+      <input id="taskTitle" name="title" maxlength="100" required placeholder="例：レポートの分析を進める" autocomplete="off">
+      <div class="form-grid">
+        <div><label class="field" for="taskMinutes">目安時間</label><select id="taskMinutes" name="minutes"><option value="5">5分</option><option value="10">10分</option><option value="25" selected>25分</option><option value="45">45分</option><option value="60">60分</option><option value="90">90分</option><option value="120">120分</option></select></div>
+        <div><label class="field" for="taskRepeat">繰り返し</label><select id="taskRepeat" name="repeat"><option value="none">今回だけ</option><option value="daily">毎日</option><option value="weekly">毎週・同じ曜日</option></select></div>
+      </div>
+      <p id="autoReward" class="tiny gold" style="margin-top:12px"></p>
+      <details id="taskDetails">
+        <summary>今回どこまで進める？ 締切などを設定</summary>
+        <label class="field" for="taskCondition">今回の完了条件</label><textarea id="taskCondition" name="condition" maxlength="500" placeholder="例：完成ではなく、グラフ1の傾きと単位を書く"></textarea>
+        <label class="field" for="taskStep">最初の一歩</label><input id="taskStep" name="step" maxlength="500" placeholder="例：Excelのグラフ1を開く">
+        <div class="form-grid">
+          <div><label class="field" for="taskScheduled">取り組む日（空欄＝後で）</label><input id="taskScheduled" name="scheduled" type="date"></div>
+          <div><label class="field" for="taskDue">締切（任意）</label><input id="taskDue" name="due" type="date"></div>
+          <div><label class="field" for="taskPriority">優先度</label><select id="taskPriority" name="priority"><option value="3">高い</option><option value="2" selected>普通</option><option value="1">低い</option></select></div>
+          <div><label class="field" for="taskEnergy">報酬の作業量</label><select id="taskEnergy" name="energy"><option value="auto">目安時間から自動</option><option value="1">小 · 行動力1</option><option value="2">中 · 行動力2</option><option value="4">大 · 行動力4</option></select></div>
+        </div>
+        <label class="field" for="taskProject">プロジェクト（任意）</label><input id="taskProject" name="project" maxlength="80" placeholder="例：ラボレポート">
+        <p class="tiny muted" style="margin-top:12px">繰り返しの編集は今後の回にも引き継ぎます。過去の未完了を毎日増やさず、現在の回だけを作成します。</p>
+      </details>
+      <div class="dialogactions"><button type="button" class="secondary" data-action="close-task">戻る</button><button class="primary" type="submit">任務を保存</button></div>
+    </form>
+  </dialog>
+  <dialog id="confirmDialog" aria-labelledby="confirmTitle">
+    <h2 id="confirmTitle"></h2><p id="confirmText" class="tiny muted" style="margin:20px 0"></p>
+    <div class="dialogactions"><button id="confirmNo" class="secondary">戻る</button><button id="confirmYes" class="primary">実行する</button></div>
+  </dialog>
+  <dialog id="endDialog" aria-labelledby="endTitle">
+    <div class="between"><h2 id="endTitle">本日の遠征を終える</h2><button class="iconbtn" data-action="close-end" aria-label="閉じる"><span data-icon="close"></span></button></div>
+    <form id="endForm"><div id="endSummary"></div>
+      <label class="field" for="tomorrowStep">明日の一歩（任意）</label><input id="tomorrowStep" name="tomorrow" maxlength="100" placeholder="例：考察の最初の段落を書く">
+      <label class="inline-check"><input name="plan" type="checkbox" checked>明日の主目標として予定する</label>
+      <label class="field" for="dayNote">今日のメモ（任意）</label><textarea id="dayNote" name="note" maxlength="1000" placeholder="できたことを、一言残す"></textarea>
+      <button class="primary full" style="margin-top:22px" type="submit">今日はここまで</button>
+      <p class="tiny muted" style="text-align:center;margin-top:14px">閉じたあとに任務を進めても大丈夫です。成果はすべて残ります。</p>
+    </form>
+  </dialog>
+  <div id="focusOverlay" class="focus-overlay" role="dialog" aria-modal="true" aria-labelledby="focusTitle">
+    <button data-action="leave-focus" class="ghost focus-leave">任務帳に戻る <span data-icon="close"></span></button>
+    <div id="focusInner" class="focus-inner"></div>
+  </div>
+  <div id="toast" class="toast hidden" role="status"></div>
+  <input id="importFile" type="file" accept="application/json,.json" hidden>
+  <script>
+/* Deterministic game model. Replaying the journal makes undo safe for rewards,
+   boss damage, upgrades and unlocks. No reward depends on animation timers. */
+(function(root){
+'use strict';
+const REGIONS=[
+ {name:'灰の城門',sub:'第一章',enemy:'城門の番人',goal:'閉ざされた門を開き、最初の烽火を灯せ。',distance:12,hp:100,iron:1,x:0},
+ {name:'沈黙の聖堂',sub:'第二章',enemy:'鐘楼の亡霊',goal:'崩れた聖堂に響く、最後の鐘を取り戻せ。',distance:18,hp:210,iron:1,x:1},
+ {name:'黎明の断崖',sub:'第三章',enemy:'翼なき王',goal:'夜の果てで、失われた夜明けを取り戻せ。',distance:24,hp:360,iron:2,x:2}
+];
+const WEAPONS=[
+ {id:'worn',name:'煤けた大剣',power:0,cost:0,ember:0,shape:0,description:'傷はある。まだ、折れてはいない。'},
+ {id:'iron',name:'黒鉄の大剣',power:9,cost:8,ember:0,shape:1,description:'幾度もの行動を、一振りの鋼に。'},
+ {id:'oath',name:'誓火の双剣',power:16,cost:18,ember:3,shape:2,description:'一歩を重ねる者の、二つの誓い。'},
+ {id:'dawn',name:'黎明の断剣',power:28,cost:30,ember:6,shape:3,description:'砕けた世界にも、朝は来る。'}
+];
+function fresh(){return {version:3,tasks:[],events:[],main:{},route:'story',region:0,view:'tasks',focus:null,settings:{mute:true,volume:.25,reduced:false},base:{xp:0,iron:0,ember:0,unlocked:0,progress:[0,0,0],hp:[100,210,360],owned:['worn'],equipped:'worn'},createdAt:Date.now()}}
+function replay(s){
+ const b=s.base,g={xp:b.xp||0,iron:b.iron||0,ember:b.ember||0,progress:[...b.progress],hp:[...b.hp],unlocked:b.unlocked||0,owned:[...b.owned],equipped:b.equipped||'worn',done:new Set(),results:[],invalid:[],mainDays:new Set(),titles:[],forged:0};
+ for(const a of s.events){
+ if(a.type==='forge'){const w=WEAPONS.find(w=>w.id===a.weapon);if(w&&!g.owned.includes(w.id)&&g.iron>=w.cost&&g.ember>=w.ember){g.iron-=w.cost;g.ember-=w.ember;g.owned.push(w.id);g.equipped=w.id;g.forged++}else g.invalid.push(a.id);continue}
+ if(a.type==='equip'){if(g.owned.includes(a.weapon))g.equipped=a.weapon;continue}
+ if(a.type!=='complete'||g.done.has(a.taskId))continue;
+ g.done.add(a.taskId);let region=Math.min(a.region,g.unlocked,2),r=REGIONS[region],cleared=g.hp[region]<=0&&g.progress[region]>=r.distance,level=1+Math.floor(g.xp/40),w=WEAPONS.find(w=>w.id===g.equipped)||WEAPONS[0];
+ let main=a.main&&!g.mainDays.has(a.day);if(main)g.mainDays.add(a.day);
+ const energy=a.energy,iron=energy*(a.route==='materials'?2:1)+r.iron-1+(main?2:0),xp=energy*(cleared?4:8),ember=main?1:0;
+ const damage=cleared?0:Math.round((12+level*3+w.power)*energy*(a.route==='materials'?.65:1));
+ let actual=Math.min(g.hp[region],damage);g.hp[region]=Math.max(0,g.hp[region]-damage);let before=g.progress[region];g.progress[region]=Math.min(r.distance,before+(a.route==='materials'?Math.max(1,Math.floor(energy/2)):energy));
+ let cache=before<6&&g.progress[region]>=6&&!cleared;g.iron+=iron+(cache?2:0);g.ember+=ember;g.xp+=xp;
+ let victory=!cleared&&g.hp[region]===0&&g.progress[region]>=r.distance;
+ if(victory){g.ember+=2;g.unlocked=Math.max(g.unlocked,Math.min(2,region+1));g.titles.push(['城門を開く者','鐘を継ぐ者','夜明けを呼ぶ者'][region])}
+ g.results.push({eventId:a.id,taskId:a.taskId,title:a.title,day:a.day,at:a.at,region,route:a.route,iron:iron+(cache?2:0),ember:ember+(victory?2:0),xp,damage:actual,main,cache,victory,repeat:cleared,weapon:w.id,level:1+Math.floor(g.xp/40)});
+ }
+ g.level=1+Math.floor(g.xp/40);g.attack=12+g.level*3+(WEAPONS.find(w=>w.id===g.equipped)||WEAPONS[0]).power;
+ g.projects=[...new Set(s.tasks.map(t=>t.project).filter(Boolean))].map(name=>{const ts=s.tasks.filter(t=>t.project===name&&!t.deleted);return {name,total:ts.length,done:ts.filter(t=>t.importedDone||g.done.has(t.id)).length}}).filter(p=>p.total);
+ return g;
+}
+function migrate(old){const s=fresh();if(!old||!Array.isArray(old.tasks))return s;s.tasks=old.tasks.map(t=>({id:String(t.id),title:String(t.title).slice(0,100),energy:[1,2,4].includes(Number(t.size))?Number(t.size):2,condition:'',step:'',minutes:25,due:'',scheduled:t.done?(t.date||''):localDay(),priority:2,project:'',createdAt:Date.now(),importedDone:!!t.done,deleted:false}));s.base.xp=Math.max(0,Number(old.xp)||0);s.base.iron=Math.max(0,Number(old.total)||0);s.base.unlocked=Math.min(2,Math.max(0,(old.regions?.length||1)-1));s.region=Math.min(old.region||0,s.base.unlocked);if(old.weapon>0){s.base.owned.push('iron');s.base.equipped='iron'};old.regions?.slice(0,3).forEach((r,i)=>{s.base.progress[i]=Math.min(REGIONS[i].distance,Math.round(Math.min(r.p,10)*REGIONS[i].distance/10));s.base.hp[i]=r.hp<=0?0:Math.round(REGIONS[i].hp*Math.min(20,r.hp)/20)});s.legacyLogs=Array.isArray(old.logs)?old.logs.slice(0,40).map(String):[];if(old.pending?.energy>0){s.base.xp+=old.pending.energy*5;s.base.iron+=old.pending.energy;}s.migrated=true;return s}
+function localDay(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function validate(s){
+ if(!s||s.version!==3||!Array.isArray(s.tasks)||!Array.isArray(s.events)||s.tasks.length>10000||s.events.length>50000)throw Error('対応するバックアップではありません。');
+ const str=(v,n=500)=>typeof v==='string'&&v.length<=n,num=(v,min,max)=>Number.isFinite(v)&&v>=min&&v<=max;
+ if(!s.base||!Array.isArray(s.base.progress)||s.base.progress.length!==3||!Array.isArray(s.base.hp)||s.base.hp.length!==3||!Array.isArray(s.base.owned)||!s.base.owned.every(w=>WEAPONS.some(x=>x.id===w))||!num(s.base.xp,0,1e9)||!num(s.base.iron,0,1e9)||!num(s.base.ember,0,1e9)||(!num(s.base.unlocked,0,2)||!Number.isInteger(s.base.unlocked))||!s.base.progress.every((p,i)=>num(p,0,REGIONS[i].distance))||!s.base.hp.every((p,i)=>num(p,0,REGIONS[i].hp)))throw Error('成長データが壊れています。');
+ if(!s.base.owned.includes('worn')||!s.base.owned.includes(s.base.equipped))throw Error('装備データが壊れています。');
+ const ids=new Set();for(const t of s.tasks){if(!str(t.id,100)||ids.has(t.id)||!str(t.title,100)||!t.title.trim()||![1,2,4].includes(t.energy)||!str(t.condition)||!str(t.step)||!str(t.due,10)||!str(t.scheduled,10)||!str(t.project,80)||!num(t.minutes,1,240)||![1,2,3].includes(t.priority)||!num(t.createdAt,0,1e14))throw Error('任務データが壊れています。');ids.add(t.id)}
+ for(const a of s.events){if(!str(a.id,100)||!['complete','forge','equip'].includes(a.type))throw Error('履歴データが壊れています。');if(a.type==='complete'&&(!ids.has(a.taskId)||![1,2,4].includes(a.energy)||(!num(a.region,0,2)||!Number.isInteger(a.region))||!['story','materials'].includes(a.route)||!str(a.title,100)||!str(a.day,10)||!num(a.at,0,1e14)))throw Error('達成履歴が壊れています。');if(a.type!=='complete'&&!WEAPONS.some(w=>w.id===a.weapon))throw Error('装備データが壊れています。')}
+ if(!s.main||typeof s.main!=='object'||Array.isArray(s.main)||!s.settings||typeof s.settings.mute!=='boolean'||typeof s.settings.reduced!=='boolean'||!num(s.settings.volume,0,1)||(!num(s.region,0,2)||!Number.isInteger(s.region))||!['story','materials'].includes(s.route))throw Error('設定データが壊れています。');
+ if(s.feedback!==undefined&&(!Array.isArray(s.feedback)||s.feedback.length>10000||!s.feedback.every(f=>str(f.day,10)&&num(f.reward,1,5)&&num(f.entry,1,5)&&str(f.note,1000))))throw Error('振り返りデータが壊れています。');
+ if(s.legacyLogs!==undefined&&(!Array.isArray(s.legacyLogs)||!s.legacyLogs.every(l=>str(l,2000))))throw Error('以前の記録が壊れています。');
+ s.focus=null;s.view='tasks';return s
+}
+root.EmberLegacy={REGIONS,WEAPONS,fresh,replay,migrate,localDay,validate};
+})(typeof module==='object'?module.exports:window);
+
+</script>
+  <script>
+/* Pure, deterministic game model. No DOM, timers, network or random rewards.
+   Every action is replayed so undo also corrects combat, crafting and unlocks. */
+(function (root) {
+  'use strict';
+  const REGIONS = [
+    { name: '灰の城門', sub: '第一章', goal: '城門の番人を倒し、最初の烽火を灯せ。', iron: 1,
+      encounters: [
+        { name: '街道', kind: 'combat', enemy: '灰の斥候', hp: 18 },
+        { name: '廃営地', kind: 'cache', enemy: '残された鍛造資材', hp: 0 },
+        { name: '城壁', kind: 'combat', enemy: '鉄骸の衛兵', hp: 160 },
+        { name: '城門', kind: 'boss', enemy: '城門の番人', hp: 850 }
+      ] },
+    { name: '沈黙の聖堂', sub: '第二章', goal: '鐘楼の亡霊を倒し、聖堂の鐘を取り戻せ。', iron: 1,
+      encounters: [
+        { name: '参道', kind: 'combat', enemy: '燭台の影', hp: 130 },
+        { name: '書庫', kind: 'cache', enemy: '聖堂の鍛造資材', hp: 0 },
+        { name: '回廊', kind: 'combat', enemy: '鎖の修道士', hp: 430 },
+        { name: '鐘楼', kind: 'boss', enemy: '鐘楼の亡霊', hp: 1500 }
+      ] },
+    { name: '黎明の断崖', sub: '第三章', goal: '翼なき王を倒し、夜明けを取り戻せ。', iron: 2,
+      encounters: [
+        { name: '稜線', kind: 'combat', enemy: '荒野の追放者', hp: 230 },
+        { name: '見張り跡', kind: 'cache', enemy: '王国最後の鍛造資材', hp: 0 },
+        { name: '断橋', kind: 'combat', enemy: '断崖の守護者', hp: 750 },
+        { name: '王座', kind: 'boss', enemy: '翼なき王', hp: 2300 }
+      ] }
+  ];
+  // Two parallel families. A tier has the same total damage in either family.
+  const WEAPONS = [
+    { id: 'great', name: '大剣', names: ['煤けた大剣', '黒鉄の大剣', '誓火の大剣', '黎明の大剣'],
+      hits: 1, description: '短い溜めから、重い一撃を刻む。' },
+    { id: 'dual', name: '双剣', names: ['旅人の双剣', '黒鉄の双剣', '誓火の双剣', '黎明の双剣'],
+      hits: 3, description: '三つの斬撃で、同じ力をつなぐ。' }
+  ];
+  const level = xp => 1 + Math.floor(xp / 50);
+  const attack = (xp, tier) => 16 + level(xp) * 2 + Math.max(0, tier) * 5;
+  const weaponName = (id, tier) => WEAPONS.find(w => w.id === id)?.names[Math.min(3, Math.max(0, tier))] + (tier > 3 ? ' +' + (tier - 3) : '');
+  const artWeapon = (id, tier) => id === 'dual' ? 'oath' : tier === 0 ? 'worn' : tier === 1 ? 'iron' : 'dawn';
+  function forgeCost(tier) {
+    // -1 unlocks the other family at tier 0. No upper limit on either family.
+    if (tier < 0) return { iron: 4, ember: 0 };
+    return { iron: 12 + tier * 10, ember: tier === 0 ? 0 : tier * 2 };
+  }
+  function fresh() {
+    return { version: 4, tasks: [], events: [], main: {}, region: 0, route: 'story',
+      settings: { mute: true, volume: .25, reduced: false }, daily: {}, feedback: [],
+      base: { xp: 0, iron: 0, ember: 0, tiers: { great: 0, dual: -1 }, equipped: 'great',
+        stages: [0, 0, 0], health: REGIONS.map(r => r.encounters.map(e => e.hp)), unlocked: 0 },
+      createdAt: Date.now() };
+  }
+  function currentEncounter(g, region) {
+    const index = g.stages[region];
+    if (index >= REGIONS[region].encounters.length) return { index, name: '踏破した道', kind: 'repeat', enemy: '', hp: 0, maxHp: 0 };
+    const e = REGIONS[region].encounters[index];
+    return { ...e, index, maxHp: e.hp, hp: g.health[region][index] };
+  }
+  function hitValues(total, family) {
+    const n = family === 'dual' ? 3 : 1;
+    return Array.from({ length: n }, (_, i) => Math.floor(total / n) + (i < total % n ? 1 : 0));
+  }
+  function replay(s) {
+    const b = s.base;
+    const g = { xp: b.xp, iron: b.iron, ember: b.ember, tiers: { ...b.tiers }, equipped: b.equipped,
+      stages: [...b.stages], health: b.health.map(a => [...a]), unlocked: b.unlocked,
+      done: new Set(), results: [], craftResults: [], invalid: [], mainDays: new Set(b.claimedDays || []), titles: [] };
+    for (const a of s.events) {
+      if (a.type === 'forge') {
+        const tier = g.tiers[a.weapon], cost = forgeCost(tier);
+        if ((a.targetTier !== undefined && a.targetTier !== tier + 1) || g.iron < cost.iron || g.ember < cost.ember) { g.invalid.push(a.id); continue; }
+        g.iron -= cost.iron; g.ember -= cost.ember; g.tiers[a.weapon]++;
+        g.equipped = a.weapon;
+        g.craftResults.push({ id: a.id, day: a.day, weapon: a.weapon, tier: g.tiers[a.weapon], name: weaponName(a.weapon, g.tiers[a.weapon]) });
+        continue;
+      }
+      if (a.type === 'equip') {
+        if (g.tiers[a.weapon] >= 0) g.equipped = a.weapon;
+        continue;
+      }
+      if (a.type !== 'complete' || g.done.has(a.taskId)) continue;
+      g.done.add(a.taskId);
+      const region = Math.min(a.region, g.unlocked), encounter = currentEncounter(g, region);
+      const isMain = a.main && !g.mainDays.has(a.day);
+      if (isMain) g.mainDays.add(a.day);
+      const repeat = encounter.kind === 'repeat', cache = encounter.kind === 'cache';
+      const energy = a.energy;
+      const iron = energy * (a.route === 'materials' ? 2 : 1) + REGIONS[region].iron - 1 + (isMain ? 2 : 0) + (cache ? 2 : 0);
+      const xp = energy * (repeat ? 4 : 8);
+      let ember = (isMain ? 1 : 0) + (cache ? 1 : 0);
+      const power = attack(g.xp, g.tiers[g.equipped]);
+      const rawDamage = Math.round(power * energy * (a.route === 'materials' ? .7 : 1));
+      const damage = cache || repeat ? 0 : Math.min(encounter.hp, rawDamage);
+      if (!cache && !repeat) g.health[region][encounter.index] -= damage;
+      const breakthrough = !repeat && (cache || g.health[region][encounter.index] === 0);
+      if (breakthrough) g.stages[region]++;
+      const victory = breakthrough && g.stages[region] === REGIONS[region].encounters.length;
+      if (victory) { ember += 3; g.unlocked = Math.max(g.unlocked, Math.min(2, region + 1)); }
+      g.iron += iron; g.ember += ember; g.xp += xp;
+      g.results.push({ eventId: a.id, taskId: a.taskId, title: a.title, day: a.day, at: a.at,
+        region, encounter: encounter.name, encounterIndex: encounter.index, beforeHp: encounter.hp, maxHp: encounter.maxHp, enemy: encounter.enemy, kind: encounter.kind,
+        iron, ember, xp, damage, hits: hitValues(damage, g.equipped), main: isMain, cache,
+        victory, breakthrough, repeat, weapon: g.equipped, tier: g.tiers[g.equipped],
+        next: currentEncounter(g, region).name, level: level(g.xp) });
+    }
+    g.level = level(g.xp); g.attack = attack(g.xp, g.tiers[g.equipped]);
+    g.cleared = g.stages.map((n, i) => n >= REGIONS[i].encounters.length);
+    g.titles = g.cleared.map((yes, i) => yes ? ['城門を開く者', '鐘を継ぐ者', '夜明けを呼ぶ者'][i] : '').filter(Boolean);
+    g.projects = [...new Set(s.tasks.filter(t => !t.deleted).map(t => t.project).filter(Boolean))].map(name => {
+      const tasks = s.tasks.filter(t => t.project === name && !t.deleted);
+      return { name, total: tasks.length, done: tasks.filter(t => t.importedDone || g.done.has(t.id)).length };
+    });
+    return g;
+  }
+  function preview(s, task, day) {
+    const g = replay(s), evt = { id: '__preview', type: 'complete', taskId: task.id, title: task.title,
+      day, at: Date.now(), region: s.region, route: s.route, energy: task.energy, main: s.main[day] === task.id };
+    if (g.done.has(task.id) || task.importedDone) return null;
+    const after = replay({ ...s, events: [...s.events, evt] });
+    const result = after.results.at(-1), cost = forgeCost(g.tiers[g.equipped]);
+    return { ...result, willForge: after.iron >= cost.iron && after.ember >= cost.ember,
+      needIron: Math.max(0, cost.iron - after.iron), needEmber: Math.max(0, cost.ember - after.ember),
+      target: weaponName(g.equipped, g.tiers[g.equipped] + 1) };
+  }
+  function localDay(d = new Date()) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function migrate(old, legacyModel) {
+    if (!old) return fresh();
+    if (old.version === 4) return validate(old);
+    const v3 = old.version === 3 ? legacyModel.validate(structuredClone(old)) : legacyModel.migrate(old);
+    const previous = legacyModel.replay(v3), s = fresh();
+    s.tasks = v3.tasks.map(t => ({ ...t, importedDone: t.importedDone || previous.done.has(t.id), repeat: 'none', seriesId: t.id, occurrence: t.scheduled || '', autoEnergy: false }));
+    s.main = { ...v3.main }; s.settings = { ...v3.settings };
+    s.region = Math.min(2, v3.region); s.route = v3.route;
+    s.base.xp = previous.xp; s.base.iron = previous.iron; s.base.ember = previous.ember;
+    s.base.tiers.great = previous.owned.includes('dawn') ? 3 : previous.owned.includes('iron') ? 1 : 0;
+    s.base.tiers.dual = previous.owned.includes('oath') ? 1 : -1;
+    s.base.equipped = previous.equipped === 'oath' ? 'dual' : 'great';
+    s.base.unlocked = previous.unlocked; s.base.claimedDays = [...previous.mainDays];
+    for (let i = 0; i < 3; i++) {
+      const cleared = previous.hp[i] <= 0 && previous.progress[i] >= legacyModel.REGIONS[i].distance;
+      if (cleared || i < previous.unlocked) {
+        s.base.stages[i] = 4; s.base.health[i] = [0, 0, 0, 0];
+      } else if (previous.progress[i] > 0 || previous.hp[i] < legacyModel.REGIONS[i].hp) {
+        // Convert the prior two-condition region into the boss encounter, preserving its damage ratio.
+        s.base.stages[i] = 3; s.base.health[i][0] = 0; s.base.health[i][2] = 0;
+        s.base.health[i][3] = Math.max(1, Math.round(REGIONS[i].encounters[3].hp * previous.hp[i] / legacyModel.REGIONS[i].hp));
+      }
+    }
+    s.legacyResults = previous.results;
+    s.legacyLogs = v3.legacyLogs || [];
+    s.feedback = v3.feedback || [];
+    s.migrated = true;
+    return s;
+  }
+  function validate(s) {
+    const str = (v, n = 500) => typeof v === 'string' && v.length <= n;
+    const int = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi;
+    const date = v => v === '' || (str(v, 10) && /^\d{4}-\d{2}-\d{2}$/.test(v));
+    const object = v => v && typeof v === 'object' && !Array.isArray(v);
+    if (!s || s.version !== 4 || !Array.isArray(s.tasks) || s.tasks.length > 20000 || !Array.isArray(s.events) || s.events.length > 100000) throw Error('対応するバックアップではありません。');
+    const b = s.base;
+    if (!object(b) || !int(b.xp, 0, 1e9) || !int(b.iron, 0, 1e9) || !int(b.ember, 0, 1e9) || !int(b.unlocked, 0, 2) || !object(b.tiers) || !int(b.tiers.great, 0, 10000) || !int(b.tiers.dual, -1, 10000) || !['great', 'dual'].includes(b.equipped) || b.tiers[b.equipped] < 0 || !Array.isArray(b.stages) || b.stages.length !== 3 || !b.stages.every(n => int(n, 0, 4)) || !Array.isArray(b.health) || b.health.length !== 3 || !b.health.every((a, i) => Array.isArray(a) && a.length === 4 && a.every((h, j) => int(h, 0, REGIONS[i].encounters[j].hp)))) throw Error('冒険データが壊れています。');
+    const ids = new Set();
+    for (const t of s.tasks) {
+      if (!str(t.id, 100) || !t.id || ids.has(t.id) || !str(t.title, 100) || !t.title.trim() || ![1, 2, 4].includes(t.energy) || !int(t.minutes, 1, 240) || !str(t.condition) || !str(t.step) || !str(t.project, 80) || !date(t.due) || !date(t.scheduled) || !int(t.priority, 1, 3) || !['none', 'daily', 'weekly'].includes(t.repeat) || !str(t.seriesId, 100) || !date(t.occurrence) || !Number.isFinite(t.createdAt)) throw Error('任務データが壊れています。');
+      ids.add(t.id);
+    }
+    const eventIds = new Set();
+    for (const a of s.events) {
+      if (!str(a.id, 100) || eventIds.has(a.id) || !['complete', 'forge', 'equip'].includes(a.type)) throw Error('履歴が壊れています。');
+      eventIds.add(a.id);
+      if (a.type === 'complete' && (!ids.has(a.taskId) || ![1, 2, 4].includes(a.energy) || !int(a.region, 0, 2) || !['story', 'materials'].includes(a.route) || !date(a.day) || !a.day || !str(a.title, 100) || !Number.isFinite(a.at))) throw Error('達成履歴が壊れています。');
+      if (a.type === 'forge' && (!int(a.targetTier, 0, 10000) || !date(a.day) || !a.day)) throw Error('鍛造履歴が壊れています。');
+      if (a.type !== 'complete' && !['great', 'dual'].includes(a.weapon)) throw Error('装備履歴が壊れています。');
+    }
+    if (!object(s.main) || Object.entries(s.main).some(([d, id]) => !date(d) || !str(id, 100)) || !int(s.region, 0, 2) || !['story', 'materials'].includes(s.route) || !object(s.settings) || typeof s.settings.mute !== 'boolean' || typeof s.settings.reduced !== 'boolean' || !Number.isFinite(s.settings.volume) || s.settings.volume < 0 || s.settings.volume > 1 || !object(s.daily)) throw Error('設定が壊れています。');
+    if (Object.entries(s.daily).some(([d, v]) => !date(d) || !object(v) || !str(v.tomorrow) || !str(v.note, 1000))) throw Error('遠征の記録が壊れています。');
+    if (s.base.claimedDays && (!Array.isArray(s.base.claimedDays) || !s.base.claimedDays.every(date))) throw Error('日次記録が壊れています。');
+    if (s.feedback && (!Array.isArray(s.feedback) || !s.feedback.every(f => object(f) && date(f.day) && int(f.reward, 1, 5) && int(f.entry, 1, 5) && str(f.note, 1000)))) throw Error('振り返りが壊れています。');
+    if (s.legacyLogs && (!Array.isArray(s.legacyLogs) || !s.legacyLogs.every(l => str(l, 2000)))) throw Error('過去の記録が壊れています。');
+    if (s.legacyResults && (!Array.isArray(s.legacyResults) || !s.legacyResults.every(r => object(r) && str(r.title, 100) && date(r.day) && int(r.region, 0, 2) && int(r.iron, 0, 1e9) && int(r.xp, 0, 1e9)))) throw Error('過去の成果が壊れています。');
+    s.feedback = s.feedback || []; s.legacyResults = s.legacyResults || []; s.legacyLogs = s.legacyLogs || [];
+    return s;
+  }
+  root.EmberGame = { REGIONS, WEAPONS, fresh, replay, currentEncounter, attack, weaponName, artWeapon, forgeCost, hitValues, preview, localDay, migrate, validate };
+})(typeof module === 'object' ? module.exports : window);
+
+</script>
+  <script>
+/* Task scheduling and recurrence use local calendar dates (DST-safe).
+   Recurrence creates the current occurrence only; missed days never pile up. */
+(function (root) {
+  'use strict';
+  const fromDay = day => { const [y, m, d] = day.split('-').map(Number); return new Date(y, m - 1, d, 12); };
+  const dayString = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  function addDays(day, n) { const d = fromDay(day); d.setDate(d.getDate() + n); return dayString(d); }
+  function dayDiff(a, b) {
+    const pa = a.split('-').map(Number), pb = b.split('-').map(Number);
+    return Math.round((Date.UTC(...[pa[0], pa[1] - 1, pa[2]]) - Date.UTC(...[pb[0], pb[1] - 1, pb[2]])) / 86400000);
+  }
+  const energyFor = minutes => minutes <= 10 ? 1 : minutes <= 40 ? 2 : 4;
+  function recurrence(s, day, idFactory, now = Date.now()) {
+    const latest = new Map();
+    for (const t of s.tasks) {
+      if (!t.seriesId) continue;
+      const old = latest.get(t.seriesId);
+      if (!old || (t.occurrence || t.scheduled) > (old.occurrence || old.scheduled) || (t.occurrence === old.occurrence && t.createdAt > old.createdAt)) latest.set(t.seriesId, t);
+    }
+    let changed = false;
+    for (const t of latest.values()) {
+      if (t.deleted || t.repeat === 'none') continue;
+      const anchor = t.occurrence || t.scheduled;
+      if (!anchor || anchor >= day) continue;
+      const interval = t.repeat === 'weekly' ? 7 : 1, diff = dayDiff(day, anchor);
+      const periods = Math.floor(diff / interval);
+      if (periods < 1) continue;
+      const next = addDays(anchor, periods * interval);
+      if (s.tasks.some(x => x.seriesId === t.seriesId && x.occurrence === next)) continue;
+      s.tasks.push({ ...t, id: idFactory(), occurrence: next, scheduled: next,
+        due: t.due ? addDays(t.due, periods * interval) : '', createdAt: now, firstStart: null,
+        importedDone: false, deleted: false });
+      changed = true;
+    }
+    return changed;
+  }
+  root.EmberTasks = { addDays, dayDiff, energyFor, recurrence };
+})(typeof module === 'object' ? module.exports : window);
+
+</script>
+  <script>
+/* Browser persistence and portable JSON backups. No application data is sent out. */
+const EmberStorage = (() => {
+  const KEY = 'emberquest-v4';
+  function load() {
+    try {
+      const own = localStorage.getItem(KEY);
+      if (own) return { state: EmberGame.validate(JSON.parse(own)), notice: '' };
+      const old = localStorage.getItem('emberquest-v3') || localStorage.getItem('emberquest-v1');
+      if (old) return { state: EmberGame.migrate(JSON.parse(old), EmberLegacy), notice: '以前の装備・素材・任務を引き継ぎました。過去の達成は旧版の記録として残ります。' };
+    } catch (error) {
+      return { state: EmberGame.fresh(), notice: '保存データを読み込めませんでした。元データは変更していません。拠点からバックアップを復元できます。', failed: true };
+    }
+    return { state: EmberGame.fresh(), notice: '' };
+  }
+  function save(state) {
+    localStorage.setItem(KEY, JSON.stringify(state));
+  }
+  function serialize(state) {
+    return JSON.stringify({ format: 'emberquest-backup', version: 4, exportedAt: new Date().toISOString(), data: state }, null, 2);
+  }
+  function parse(text) {
+    const parsed = JSON.parse(text), data = parsed.data || parsed;
+    if (data.version === 4) return EmberGame.validate(data);
+    if (data.version === 3) return EmberGame.migrate(data, EmberLegacy);
+    throw Error('EMBERQUESTのバックアップを選んでください。');
+  }
+  function download(name, text, type) {
+    const url = URL.createObjectURL(new Blob([text], { type }));
+    const a = document.createElement('a'); a.href = url; a.download = name; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+  return { KEY, load, save, serialize, parse, download };
+})();
+
+</script>
+  <script>
+/* Original vector illustrations. All assets travel with the HTML. */
+const icons={sword:'M4 20 17 7m-6 1 5 5M16 4l4 0 0 4-6 6-4-4 6-6ZM3 17l4 4',fire:'M12 3c1 5-5 6-5 11a5 5 0 0 0 10 0c0-2-1-4-3-6 0 3-2 3-2 4 1-4 2-6 0-9Z',check:'m5 12 4 4L19 6',arrow:'M4 12h15m-6-6 6 6-6 6',plus:'M12 5v14M5 12h14',target:'M21 12a9 9 0 1 1-9-9m0 5a4 4 0 1 0 4 4m-4 0 8-8m-4 0h4v4',clock:'M12 8v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0',map:'m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2V5Zm6-2v16m6-14v16',hammer:'m4 20 9-9m-4-5 5-3 7 7-3 5-9-9Z',camp:'M3 20 12 4l9 16H3Zm5 0 4-7 4 7',bag:'M5 7h14l2 14H3L5 7Zm3 0V5a4 4 0 0 1 8 0v2',settings:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8M9 3l-1 3-3 1-2 4 2 3v4l4 3 3-1 3 1 4-3v-4l2-3-2-4-3-1-1-3H9Z',volume:'M4 9h4l5-5v16l-5-5H4V9Zm12-2q6 5 0 10',edit:'m4 16 11-11 4 4L8 20H4v-4Zm9-9 4 4',undo:'M8 4 3 9l5 5M3 9h10a6 6 0 0 1 0 12',close:'m6 6 12 12M6 18 18 6',star:'m12 3 3 6 6 1-4 5 1 6-6-3-6 3 1-6-4-5 6-1 3-6Z',scroll:'M6 3h14v14H8a3 3 0 0 0-3 3V6a3 3 0 0 0-3-3h4Zm2 14v4h12a3 3 0 0 0 3-3v-1h-3M9 7h7M9 11h7',download:'M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4',upload:'M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4'};
+function icon(name,size=18){return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${(icons[name]||icons.star).split('|').map(d=>`<path d="${d}"/>`).join('')}</svg>`}
+let artSequence=0;
+function knight(weapon='worn',large=false){const prefix='knight'+(++artSequence)+'-';let blades={worn:'<path d="m155 102 21-64 7-8 3 13-22 65Z" fill="url(#steel)" stroke="#969b9b"/><path d="m170 64 5-3-1 8-4 2" fill="#2a2e32"/>',iron:'<path d="m154 102 19-76 11-10 7 17-24 74Z" fill="url(#steel)" stroke="#bbc4c7"/><path d="m176 34 7-10-20 73" fill="none" stroke="#e1e6dc" opacity=".5"/>',oath:'<path d="m160 110 24-57 6-3-2 20-20 44Z" fill="url(#steel)" stroke="#c8b88b"/><path d="M62 172 27 135l-2-15 15 7 31 39Z" fill="url(#steel)" stroke="#c8b88b"/>',dawn:'<path d="m152 106 20-77 9-9 3 17 11-2-3 14-12 10 3 11-15 39Z" fill="url(#steel)" stroke="#c4b080"/><path d="m176 43-16 57" stroke="#f0b77a" stroke-width="2"/>'};return `<g class="knight ${large?'large':''}"><defs><linearGradient id="steel" x1="0" x2="1"><stop stop-color="#343e45"/><stop offset=".48" stop-color="#a0a9a4"/><stop offset=".55" stop-color="#3b454c"/><stop offset="1" stop-color="#59646a"/></linearGradient><linearGradient id="armor" x1="0" x2="1"><stop stop-color="#111a23"/><stop offset=".45" stop-color="#4d5961"/><stop offset=".7" stop-color="#232c36"/><stop offset="1" stop-color="#090e16"/></linearGradient><linearGradient id="cape" x2="1" y2="1"><stop stop-color="${weapon==='worn'?'#4d3b38':'#753e38'}"/><stop offset="1" stop-color="#12171e"/></linearGradient></defs><ellipse cx="113" cy="261" rx="76" ry="9" fill="#070a0e" opacity=".7"/><path class="cloak" d="M82 81 61 95 52 155 24 240l24-6-1 17 25-12 6 15 32-20 24 18 8-19 29 8-9-25-12-119-29-19Z" fill="url(#cape)" stroke="#6b5149" stroke-width=".6"/><path d="m68 109-10 107-15 24m39-127-7 114m61-119 10 105 13 21" fill="none" stroke="#82695b" opacity=".18" stroke-width="2"/><path d="m86 189-9 45-7 15 4 10h31l-1-11 9-45m17-14 16 40-2 22 7 10h28l-6-14-15-56" fill="url(#armor)" stroke="#606970" stroke-width="1.3"/><path d="m81 228 23 6m30-6 21-7m-75 19 22 3m39-10 15-5" stroke="#74808a" opacity=".65"/><path d="M80 115 81 174 71 198l38 9 40-10-14-26 4-57Z" fill="url(#armor)" stroke="#737c7c"/><path d="m81 139 30 12 27-15-4 32-22 14-29-14Z" fill="#1e2932" stroke="#626c71"/><path d="m89 126 21 10 19-8m-42 54 25 7 24-8m-29-40 1 35" stroke="#8b9390" opacity=".55" fill="none"/><path d="m74 94-20 17 6 26 22-9 8-22Zm53 1 25 13 7 23-23-1-17-23Z" fill="url(#armor)" stroke="#8c928a"/><path d="m57 115 22-8m51-3 21 10m-86 3 7 5m60-7 10 4" stroke="#b3a68d" opacity=".65"/><path d="m59 134-6 29 10 17 13-7-1-13 7-31m66 4 13 23 2 21-12 11-11-7 5-17-11-26" fill="url(#armor)" stroke="#6d797f"/><path d="m56 160 17 4m70-7 17-4" stroke="#a2a79b"/><path d="M88 91 84 60l12-19 29 3 13 20-9 31-22 9Z" fill="url(#armor)" stroke="#8e978e"/><path d="m94 45 4-13 7 10 15 2 9-7-2 12" fill="#313b45" stroke="#a09a85"/><path d="m88 64 21 7 23-6-7 10-18 6-18-6Z" fill="#070d13"/><path d="m109 49-2 22-1 23m-12-12 8 5m14-5 8-4" stroke="#b0b5a8" opacity=".65"/><path d="m95 58 7 2m13 2 10-2" stroke="#bba881" opacity=".7"/><path d="m77 101 10-8 24 14 20-14 10 11-20 17-26-4Z" fill="${weapon==='worn'?'#51423f':'#8a4c3f'}" stroke="#8b6953"/><path d="m79 175 58 2 1 7-58-1Z" fill="#5c5043" stroke="#b5a27c"/><rect x="105" y="176" width="12" height="9" fill="#212a32" stroke="#bfa778"/><g class="blade">${blades[weapon]||blades.worn}<path d="m145 102 28 9 2 5-33-10Z" fill="#ad9270" stroke="#433c33"/><path d="m157 111-6 21 5 2 7-21Z" fill="#493d33" stroke="#ad9270"/></g><path d="m150 123 10 4-2 11-11-3Z" fill="#647078" stroke="#8d968b"/>${weapon==='dawn'?'<path d="m80 105 8 4-4 8-7-3Z" fill="#efb571"/>':''}</g>`.replaceAll('id="steel"','id="'+prefix+'steel"').replaceAll('id="armor"','id="'+prefix+'armor"').replaceAll('id="cape"','id="'+prefix+'cape"').replaceAll('url(#steel)','url(#'+prefix+'steel)').replaceAll('url(#armor)','url(#'+prefix+'armor)').replaceAll('url(#cape)','url(#'+prefix+'cape)')}
+function enemyArt(region,hp){if(hp<=0)return '';const colors=['#847a69','#a5abb9','#b79875'];let body=region===1?'<path d="M20 130Q20 38 76 26Q134 40 136 130l-20-20-5 33-20-13-15 20-18-23-20 16-3-33Z" fill="#3a4052" stroke="#9195a2"/><path d="m59 56 17-17 18 20-9 22H67Z" fill="#0a111c"/><path d="m67 60 8 3m7 0 7-3" stroke="#dbc8a4" stroke-width="2"/><path d="M25 111q50-27 100 0M42 88q40-17 65 0" fill="none" stroke="#717b8e"/>':region===2?'<path d="m21 40 29 17 24-18 25 18 32-17-6 67-31-17-19 43-20-43-30 18Z" fill="#292b35" stroke="#756c66"/><path d="m56 62 17-30 19 30-12 24H67Z" fill="#111720" stroke="#aa9472"/><path d="m60 47-4-20 14 9 5-18 8 18 13-10-5 24m-28 12 9 3 11-3" fill="none" stroke="#c1a67b"/><path d="m66 88-13 53 23-8 21 9-15-54" fill="#3e3533" stroke="#9a7c64"/>':'<path d="m44 67-19 18 5 34 20-7-5 43h62l-7-43 20 7 5-34-22-18-29 7Z" fill="#292e35" stroke="#737474"/><path d="m49 83 25 13 27-13-3 33-23 12-25-13Z" fill="#41454b" stroke="#787973"/><path d="m57 74-6-29 23-17 24 17-7 29-18 9Z" fill="#30353b" stroke="#8a897c"/><path d="m54 44-11-18 18 9m32 8 14-19-17 11" fill="#383b41" stroke="#7c7b70"/><path d="m61 51 10 4 17-5" fill="none" stroke="#d4a46d" stroke-width="2"/><path d="M119 80h9l5 70h-17Z" fill="#77756c" stroke="#3e4349"/><path d="m111 120 26-1v5h-26Z" fill="#aa8d63"/>';
+return `<g class="enemy-figure" opacity="${Math.max(.45,hp)}"><ellipse cx="77" cy="155" rx="61" ry="9" fill="#050910"/>${body}<path d="m68 97-5 15m29-25-6 11" stroke="${colors[region]}" opacity="${1-hp}" stroke-width="2"/></g>`}
+function sceneArt(region,weapon,game){let r=REGIONS[region],encounter=EmberGame.currentEncounter(game,region),ratio=encounter.maxHp?encounter.hp/encounter.maxHp:0,clear=game.cleared[region],prog=game.stages[region]/4;let sky=region===2?'#4b3733':region===1?'#24283a':'#292d35';let env='';if(region===0){env=`<path d="M40 290V70h90V15h230v55h90v220Z" fill="#151b24" stroke="#51545a"/><path d="M58 290V93h57v197m260 0V93h58v197" fill="#272e36" stroke="#454b51"/><path d="M143 290V140Q245-25 347 140v150" fill="#0c131e" stroke="#646263" stroke-width="9"/><path d="M160 290V143Q245 11 330 143v147" fill="${clear?'#baa078':'#171f2a'}" stroke="#3b444d" stroke-width="4"/>${!clear?`<g opacity="${1-prog*.6}"><path d="M176 290V144m23 146V116m23 174V100m24 190V94m23 196V100m23 190V115m23 175V144" stroke="#53595f" stroke-width="6"/><path d="M170 166h150m-150 54h150m-150 47h150" stroke="#40474e" stroke-width="5"/></g>`:'<path d="m245 140-55 150h110Z" fill="#ead5a0" opacity=".24"/>'}<path d="M137 70h216M137 86h216M57 132h57m262 0h56M57 200h57m262 0h56" stroke="#5a5d60" opacity=".4"/><path d="m120 17 18 30-12 25m206-53-20 23 10 23" stroke="#080f19" fill="none" stroke-width="4"/>`}
+if(region===1)env='<path d="M10 300V92l70-53 72 53v208M350 300V92l70-53 72 53v208" fill="#171d2b" stroke="#424854"/><path d="M114 300V44L245-10l130 54v256" fill="#202533" stroke="#59606b"/><path d="M173 300V107Q245-1 317 107v193" fill="#0b1320" stroke="#747582" stroke-width="5"/><path d="M215 124V61h59v63Z" fill="#5b5c67"/><path d="M229 120V66h31v54Z" fill="#c3b09a" opacity=".4"/><path d="M126 300V61h20v239m198 0V61h21v239M33 300V108h22v192m389 0V108h22v192" fill="#3e4350"/><path d="M0 283h500M0 300h500m-400-150h76m164 0h70" stroke="#5a5b67" opacity=".5"/><path d="m289 15-20 31 15 22-13 44m-110 91 20 20-5 50" stroke="#0a111e" fill="none" stroke-width="5"/>';
+if(region===2)env='<circle cx="258" cy="93" r="56" fill="#c0a284" opacity=".5"/><path d="M0 201 92 100l53 51 63-68 45 58 67-100 89 129 91-89v219H0Z" fill="#34323a"/><path d="M0 248 82 158l79 69 55-61 70 91 91-81 123 54v70H0Z" fill="#24262f"/><path d="m122 290 24-116 62 14 12 98m89 13-12-101 35-24 28 116" fill="#111b25" stroke="#5d5354"/><path d="m135 191 70 16m-74 9 80 16m93-17 35-12" stroke="#74605b"/><path d="M240 300V130l18-16 19 16v170" fill="#30303a" stroke="#9c8267"/><path d="m245 138 12 8 16-8m-26 13 8 7 15-7" stroke="#c1a078" fill="none"/>';
+return `<svg viewBox="0 0 700 430" role="img" aria-label="${r.name}。${weapon==='oath'?'双剣':'大剣'}を携えた灰の旅人と${clear?'灯った烽火':encounter.enemy}" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="night" x2="0" y2="1"><stop stop-color="${sky}"/><stop offset="1" stop-color="#090f17"/></linearGradient><radialGradient id="light"><stop stop-color="#c99465" stop-opacity=".4"/><stop offset="1" stop-color="#c99465" stop-opacity="0"/></radialGradient><linearGradient id="mist"><stop stop-color="#bbc2c0" stop-opacity="0"/><stop offset=".5" stop-color="#bbc2c0" stop-opacity=".13"/><stop offset="1" stop-color="#bbc2c0" stop-opacity="0"/></linearGradient></defs><rect width="700" height="430" fill="url(#night)"/><circle cx="495" cy="85" r="140" fill="url(#light)"/><g transform="translate(175 0)">${env}</g><path d="M0 321 48 302l60 14 62-9 52 18 87-15 62 16 78-13 81 12 71-19 99 19v105H0Z" fill="#101820"/><path d="M290 430 383 311h47l-48 119" fill="#626165" opacity=".12"/><g transform="translate(430 195) scale(1.05)">${encounter.kind==='cache'?'<g transform="translate(20 80)"><path d="M10 30Q10 0 57 0q45 0 45 30v38H10Z" fill="#4e3f32" stroke="#b39a6e" stroke-width="2"/><path d="M10 30h92M25 4v63M87 4v63" stroke="#b39a6e" stroke-width="4"/><rect x="50" y="26" width="13" height="20" fill="#dbc18b"/><ellipse cx="57" cy="28" rx="50" ry="22" fill="url(#light)"/></g>':`<g transform="translate(${encounter.kind==='boss'?-45:0} ${encounter.kind==='boss'?-62:0}) scale(${encounter.kind==='boss'?1.48:encounter.index===0?.8:1.12})">${enemyArt(region,ratio)}</g>`}</g><g class="hero-stage" transform="translate(105 102) scale(1.18)"><path d="m72 96 16-35 18-20 24 5 17 34 17 32 13 93-7 46" fill="none" stroke="#d8b585" stroke-opacity=".32" stroke-width="3"/>${knight(weapon)}</g><g opacity=".16" stroke="#c4c3b7" stroke-width=".6"><path d="m232 266 17 7m-19-3 15 8m35-6 8-11m-5 13 6-9m-44 27 12 3"/></g><ellipse class="mist" cx="420" cy="328" rx="420" ry="40" fill="url(#mist)"/><path d="m0 390 120-13 120 21 140-15 120 13 200-15v49H0Z" fill="#080f16"/><g transform="translate(77 316)"><path d="m-7 50 14-3m-17-1 18 6" stroke="#5e4a37" stroke-width="5"/><path class="flame" d="M0 44q-12-12-3-26-1 9 5 11 8-13 3-23 22 25 6 38Z" fill="${clear?'#f4be70':'#b67847'}"/><path d="M2 43q-5-9 2-15 8 12 3 15Z" fill="#f2ca88"/></g>${clear?'<g fill="#c69253"><path d="M608 291v-27q-13-9-3-23l4 8 6-20q17 25 4 35v27Z"/><path d="M146 218v-23q-10-7-2-20l4 6 3-17q15 20 4 31v23Z"/></g>':''}<g fill="#d9a16c" opacity=".65" class="embers"><circle cx="89" cy="319" r="1.2"/><circle cx="72" cy="304" r=".9"/><circle cx="113" cy="341" r="1.1"/><circle cx="58" cy="336" r=".8"/><circle cx="355" cy="371" r=".8"/></g><path class="slash" d="M350 107Q600 200 465 345" stroke="#f4c588" stroke-width="7" fill="none"/><path class="slash second" d="M585 139Q377 253 554 342" stroke="#f4c588" stroke-width="4" fill="none"/></svg>`}
+
+</script>
+  <script>
+/* UI controller. Game state lives in game.js; recurrence in tasks.js;
+   persistence in storage.js; all illustrations in art.js. */
+'use strict';
+const { REGIONS, WEAPONS, replay, currentEncounter, forgeCost, weaponName, artWeapon, preview, localDay } = EmberGame;
+const { addDays, energyFor, recurrence } = EmberTasks;
+const $ = id => document.getElementById(id);
+const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+const uid = () => globalThis.crypto?.randomUUID?.() || Date.now().toString(36) + Math.random().toString(36).slice(2);
+const today = () => localDay();
+const loaded = EmberStorage.load();
+let state = loaded.state, game = replay(state), view = 'tasks', filter = 'today', showAll = false;
+let focus = null, focusTimer, toastTimer, confirmCallback, lastDay = today();
+let animationQueue = [], animating = false, animationTimer, soundTimer, audioCtx, lastResultSession = null;
+let selectedWeapon = game.equipped, lastForge = null;
+
+function save() {
+  try { EmberStorage.save(state); return true; }
+  catch (error) { toast('保存できませんでした。拠点からJSONバックアップを書き出してください。'); return false; }
+}
+function toast(message) {
+  $('toast').textContent = message;
+  $('toast').classList.remove('hidden');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => $('toast').classList.add('hidden'), 5500);
+}
+function fillIcons(scope = document) {
+  scope.querySelectorAll('[data-icon]').forEach(el => { el.innerHTML = icon(el.dataset.icon); });
+}
+const done = task => task.importedDone || game.done.has(task.id);
+function superseded(task) {
+  return task.repeat !== 'none' && state.tasks.some(other => other.seriesId === task.seriesId && other.occurrence > task.occurrence);
+}
+function activeTasks() { return state.tasks.filter(t => !t.deleted && !done(t) && !superseded(t)); }
+function sorted(tasks) {
+  return [...tasks].sort((a, b) => {
+    const ad = a.due || '9999', bd = b.due || '9999';
+    return (ad < today() ? -1 : 0) - (bd < today() ? -1 : 0) || b.priority - a.priority || ad.localeCompare(bd) || a.createdAt - b.createdAt;
+  });
+}
+function primaryTask() { return activeTasks().find(t => t.id === state.main[today()]) || null; }
+function refreshRecurrence() {
+  if (recurrence(state, today(), uid)) save();
+}
+function clearAnimation() {
+  clearTimeout(animationTimer); clearTimeout(soundTimer);
+  animationQueue = []; animating = false;
+}
+function navigate(next) {
+  if (!['tasks', 'adventure', 'equipment', 'camp'].includes(next)) return;
+  clearAnimation(); view = next; render();
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+function render() {
+  game = replay(state);
+  state.region = Math.min(state.region, game.unlocked);
+  document.body.classList.toggle('reduced', state.settings.reduced);
+  $('headerStats').innerHTML = `<span>Lv. ${game.level}<span class="header-title">　灰の旅人</span></span>
+    <span class="gold">${icon('hammer', 14)} ${game.iron}<span class="iron-label"> 鉄片</span></span>
+    <button class="iconbtn" data-action="mute" aria-label="${state.settings.mute ? '音をオンにする' : '音をミュートする'}">${icon('volume', 15)}${state.settings.mute ? '<span style="font-size:9px;margin-left:4px">OFF</span>' : ''}</button>`;
+  renderHome(); renderAdventure(); renderEquipment(); renderCamp();
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + view));
+  document.querySelectorAll('[data-action=nav]').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  fillIcons();
+}
+function sceneBlock(displayGame = game) {
+  const i = state.region, r = REGIONS[i], e = currentEncounter(displayGame, i);
+  const isFight = ['combat', 'boss'].includes(e.kind);
+  const caption = e.kind === 'repeat' ? '烽火は、この地に残る。' : e.kind === 'cache' ? '廃営地に、鍛造の手がかり。' : e.kind === 'boss' ? 'この一撃が、門を開く。' : '闇の向こうへ、踏み出せ。';
+  return `<div class="scene" id="battleScene">
+    ${sceneArt(i, artWeapon(displayGame.equipped, displayGame.tiers[displayGame.equipped]), displayGame)}
+    <div class="scenetop"><span class="scene-tag">${esc(e.name)}</span><span>${e.kind === 'repeat' ? '踏破済み' : e.index + 1 + ' / 4'}</span></div>
+    <div class="scene-caption"><div class="boss-row"><span>${esc(e.enemy || r.name + 'を踏破')}</span><span>${isFight ? e.hp + ' / ' + e.maxHp + ' HP' : e.kind === 'cache' ? '次の任務で回収' : '再探索できる'}</span></div>
+      <div class="bar ${isFight ? '' : 'muted-bar'}"><span style="width:${isFight ? e.hp / e.maxHp * 100 : 100}%"></span></div><h2>${caption}</h2></div>
+    <div id="animationMessage" class="animation-message hidden" aria-live="polite"></div><div id="damageNumber" class="damage-number"></div>
+  </div>`;
+}
+function mainCard(task) {
+  return `<article class="main-task"><div class="between"><span class="main-label">${icon('target', 13)}今日の主目標</span><div><button class="iconbtn" data-action="edit" data-id="${esc(task.id)}" aria-label="主目標を編集">${icon('edit', 15)}</button><button class="ghost" data-action="unmain">変更</button></div></div>
+    <h2>${esc(task.title)}</h2><div class="tagrow"><span class="tag">${icon('clock', 12)}${task.minutes}分</span>${task.due ? `<span class="tag ${task.due < today() ? 'urgent' : ''}">${task.due < today() ? '期限超過 ' : ''}${esc(task.due)}</span>` : ''}${task.repeat !== 'none' ? `<span class="tag">${task.repeat === 'daily' ? '毎日' : '毎週'}</span>` : ''}</div>
+    <div class="stepbox"><span class="caption">次の一歩</span>${esc(task.step || '必要な資料や道具を開き、最初の一つに取りかかる。')}</div>
+    ${task.condition ? `<p class="condition">今回の完了条件：${esc(task.condition)}</p>` : ''}
+    <button class="primary full" data-action="start" data-id="${esc(task.id)}">${icon('arrow', 16)}${task.firstStart ? '続きに取りかかる' : '取りかかる'}</button></article>`;
+}
+function rewardForecast(task) {
+  const forecast = preview(state, task, today());
+  if (!forecast) return '';
+  const change = forecast.willForge ? `この任務で、《${forecast.target}》を鍛造できる。`
+    : forecast.victory ? 'この任務で、番人を突破し、新しい景色へ。'
+      : forecast.breakthrough ? `${forecast.encounter}を突破し、${forecast.next}へ進む。`
+        : forecast.kind === 'repeat' ? '踏破した道から、次の鍛造の素材を持ち帰る。'
+          : `${forecast.enemy}に ${forecast.damage} ダメージ。次の一撃を刻む。`;
+  return `<div class="reward-preview"><span class="icon">${icon(forecast.willForge ? 'hammer' : 'sword', 20)}</span><div>
+    <div class="headline">${esc(change)}</div><p>鉄片 +${forecast.iron}${forecast.ember ? ' ・ 熾火 +' + forecast.ember : ''} ・ EXP +${forecast.xp}${!forecast.willForge ? '<br>鍛造まで、鉄片あと ' + forecast.needIron + ' 個' + (forecast.needEmber ? '・熾火あと ' + forecast.needEmber + ' 個' : '') : ''}</p></div></div>`;
+}
+function onboardingPreview() {
+  const target = weaponName(game.equipped, game.tiers[game.equipped] + 1), cost = forgeCost(game.tiers[game.equipped]);
+  return `<div class="first-preview">${portraitSvg(game.equipped, game.tiers[game.equipped] + 1)}<div><h3>次の姿を、先に見る。</h3><p>《${target}》<br>鉄片 ${game.iron} / ${cost.iron}。次の主目標でも、確実に近づく。</p><button class="ghost gold" data-action="nav" data-view="equipment">鍛造後の姿を見る →</button></div></div>`;
+}
+function renderHome() {
+  const r = REGIONS[state.region], main = primaryTask(), live = activeTasks();
+  const eligible = sorted(live.filter(t => t.scheduled && t.scheduled <= today()));
+  const recentResult = game.results.find(r => r.eventId === lastResultSession);
+  const closed = state.daily[today()] && !state.daily[today()].reopened ? state.daily[today()] : null;
+  let mainHtml;
+  if (closed) mainHtml = `<div class="main-task"><span class="main-label">今日は、ここまで。</span><h2>果たした一歩を、ここに残す。</h2><p class="condition">${closed.tomorrow ? '明日の一歩：' + esc(closed.tomorrow) : '焚き火は、あなたの次の出発を待っている。'}</p><button class="primary full" data-action="end-day">今日の成果を見る</button></div>`;
+  else if (main) mainHtml = mainCard(main);
+  else if (eligible.length) {
+    const candidate = eligible[0];
+    mainHtml = `<div class="main-task"><span class="main-label">今日、果たすことを一つ。</span><h2>${esc(candidate.title)}</h2><p class="condition">今日できる成果を主目標に。追加素材は1日1回です。</p><button class="primary full" data-action="main" data-id="${esc(candidate.id)}">${icon('target', 16)}これを今日の主目標にする</button></div>`;
+  } else {
+    mainHtml = `<div class="main-task"><span class="main-label">${game.results.length || state.migrated ? '焚き火は、まだ消えていない。' : '最初の一歩'}</span><h2>${game.results.length || state.migrated ? '今日の歩みは、ここに残る。' : '今から行う、小さな用事を。'}</h2><p class="condition">${game.results.length || state.migrated ? '休む日にも、装備や成長は失われません。' : '名前と目安時間だけで登録できます。実際に終えたら、最初の敵を突破。'}</p><button class="primary full" data-action="add">${icon('plus', 16)}任務を追加</button></div>`;
+  }
+  let tasks = state.tasks.filter(t => !t.deleted && t.id !== (closed ? null : main?.id));
+  tasks = tasks.filter(t => filter === 'done' ? done(t) : filter === 'all' ? true : done(t) || superseded(t) ? false
+    : filter === 'overdue' ? !!t.due && t.due < today()
+      : filter === 'later' ? !t.scheduled || t.scheduled > today()
+        : !!t.scheduled && t.scheduled <= today());
+  tasks = sorted(tasks);
+  const limit = filter === 'today' && !showAll ? Math.max(0, 3 - (main && !closed ? 1 : 0)) : tasks.length;
+  const count = game.results.filter(r => r.day === today()).length;
+  $('page-tasks').innerHTML = `<div class="chapterbar"><div><div class="chapter-label">${r.sub} · ${game.cleared[state.region] ? '烽火が灯った地' : '現在の遠征'}</div><h1>${r.name}</h1><p class="goal">${r.goal}</p></div><span class="chapterindex">0${state.region + 1}</span></div>
+    <div class="home-grid"><div class="visual-col">${sceneBlock()}<p class="intro-copy">${game.cleared[state.region] ? '果たした行動が、世界に残った。次の地域へ進むか、この地で剣を鍛えるか。' : '現実で果たした行動が、この剣の力になる。<br>次の任務が、道の先にある景色を変える。'}</p></div>
+    <div class="action-col">${mainHtml}${main && !closed ? rewardForecast(main) : ''}
+      ${recentResult && !closed ? compactResult(recentResult) : ''}
+      ${game.results.length === 1 && !state.migrated && !closed ? onboardingPreview() : ''}
+      <div class="task-section"><div class="section-head"><h2>そのほかの任務</h2><button class="ghost" data-action="add">${icon('plus', 14)}任務を追加</button></div>
+        <div class="filters">${[['today','今日'],['overdue','期限超過'],['later','後で'],['done','完了'],['all','すべて']].map(([id, label]) => `<button class="filter ${filter === id ? 'active' : ''}" data-action="filter" data-filter="${id}">${label}</button>`).join('')}</div>
+        ${tasks.length ? tasks.slice(0, limit).map(taskRow).join('') : '<div class="empty">この区分の任務はありません。<br>予定した工程まで進めば、達成です。</div>'}
+        ${tasks.length > limit ? `<button class="ghost" data-action="show-all">ほか ${tasks.length - limit} 件を表示</button>` : ''}
+      </div><div class="end-link"><span>今日 ${count} 件を達成</span><button class="ghost gold" data-action="end-day">${icon('camp', 15)}${closed ? '今日の成果を見る' : '本日の遠征を終える'}</button></div>
+    </div></div>`;
+}
+function taskRow(t) {
+  const complete = done(t), past = superseded(t) && !complete, result = game.results.find(r => r.taskId === t.id);
+  return `<article class="task-row ${complete || past ? 'done' : ''}"><button class="checkbtn" data-action="complete" data-id="${esc(t.id)}" ${complete || past ? 'disabled' : ''} aria-label="${esc(t.title)}を完了">${complete ? icon('check', 13) : ''}</button>
+    <div class="body"><h3>${esc(t.title)}</h3><div class="meta"><span>${t.minutes}分</span>${t.repeat !== 'none' ? '<span>' + (t.repeat === 'daily' ? '毎日' : '毎週') + '</span>' : ''}${t.due ? `<span class="${t.due < today() && !complete ? 'orange' : ''}">${t.due < today() && !complete ? '期限超過 ' : ''}${esc(t.due)}</span>` : ''}${t.project ? '<span>' + esc(t.project) + '</span>' : ''}${past ? '<span>過去の回・未実施</span>' : complete ? '<span>' + (t.importedDone ? '旧版で達成' : '達成済み') + '</span>' : ''}</div></div>
+    <div class="task-options">${!complete && !past ? `<button class="iconbtn" data-action="main" data-id="${esc(t.id)}" aria-label="${esc(t.title)}を主目標にする">${icon('target', 15)}</button><button class="iconbtn" data-action="start" data-id="${esc(t.id)}" aria-label="${esc(t.title)}に取りかかる">${icon('arrow', 15)}</button>` : result ? `<button class="iconbtn" data-action="undo" data-id="${esc(t.id)}" aria-label="${esc(t.title)}の完了を取り消す">${icon('undo', 15)}</button>` : ''}
+    ${!past ? `<button class="iconbtn" data-action="edit" data-id="${esc(t.id)}" aria-label="${esc(t.title)}を編集">${icon('edit', 15)}</button>` : ''}<button class="iconbtn" data-action="archive" data-id="${esc(t.id)}" aria-label="${esc(t.title)}を保管">${icon('close', 15)}</button></div></article>`;
+}
+function resultTitle(r) {
+  return r.victory ? '門の向こうに、新しい景色。' : r.cache ? '鍛造資材を回収した。' : r.breakthrough ? r.encounter + 'を突破した。' : r.repeat ? '踏破した道から、鍛造の糧を。' : 'その一撃は、確かに残った。';
+}
+function compactResult(r) {
+  return `<article class="inline-result"><div class="between"><span class="tiny gold">直前の成果</span><button class="ghost" data-action="undo" data-id="${esc(r.taskId)}">${icon('undo', 13)}取消</button></div><h3>${resultTitle(r)}</h3><div class="gains"><span>鉄片 +${r.iron}</span>${r.ember ? '<span>熾火 +' + r.ember + '</span>' : ''}<span>EXP +${r.xp}</span></div><p class="source">${r.damage ? esc(r.enemy) + 'に ' + r.damage + ' ダメージ。' : ''}${r.victory ? '烽火が灯り、次の地域が解放された。' : r.breakthrough ? '次は、' + esc(r.next) + '。' : ''}<br>達成：${esc(r.title)}</p></article>`;
+}
+function roadmap(region) {
+  return `<div class="roadmap">${REGIONS[region].encounters.map((e, i) => `<div class="roadstop ${i < game.stages[region] ? 'done' : i === game.stages[region] ? 'active' : ''}"><span>${i < game.stages[region] ? icon('check', 12) : i + 1}</span>${e.name}</div>`).join('')}</div>`;
+}
+function renderAdventure() {
+  const i = state.region, r = REGIONS[i], e = currentEncounter(game, i), result = game.results.at(-1);
+  $('page-adventure').innerHTML = `<div class="wide-title"><h1>次の対峙へ。</h1><p>街道から城門まで、遭遇を一つずつ突破する。敵を倒せば、次の出来事へ進む。</p></div>
+    <div class="panel"><div class="between"><h2 class="serif" style="font-weight:400;font-size:22px">${r.name}</h2><span class="tiny gold">${game.cleared[i] ? '踏破済み' : '現在地：' + e.name}</span></div>${roadmap(i)}
+      <div class="encounter-list">${r.encounters.map((x, n) => `<div class="encounter-row"><div><h3>${x.name} · ${x.enemy}</h3><p class="tiny muted">${n < game.stages[i] ? x.kind === 'cache' ? '資材を回収済み' : '撃破済み' : x.kind === 'cache' ? '次の任務で鉄片2個・熾火1個を追加回収' : 'HP ' + game.health[i][n] + ' / ' + x.hp}</p></div><span class="tiny ${n === game.stages[i] ? 'gold' : 'muted'}">${n < game.stages[i] ? '突破' : n === game.stages[i] ? '対峙中' : 'この先'}</span></div>`).join('')}</div>
+    </div><div class="route-options"><button class="route ${state.route === 'story' ? 'active' : ''}" data-action="route" data-route="story">${icon('sword', 21)}<div><strong>突破を目指す</strong><p>攻撃を優先。敵を倒し、物語を進める。</p></div></button><button class="route ${state.route === 'materials' ? 'active' : ''}" data-action="route" data-route="materials">${icon('hammer', 21)}<div><strong>素材を集める</strong><p>基本の鉄片を2倍獲得。攻撃は70%。好きな剣を育てる道。</p></div></button></div>
+    <div class="region-grid">${REGIONS.map((x, n) => `<article class="panel region-card ${i === n ? 'selected' : ''}"><span class="tiny gold">${x.sub} ${n > game.unlocked ? '・未解放' : game.cleared[n] ? '・踏破' : ''}</span><h2>${x.name}</h2><p>${x.goal}</p><button class="secondary" data-action="region" data-region="${n}" ${n > game.unlocked || n === i ? 'disabled' : ''}>${n === i ? '現在の遠征先' : n > game.unlocked ? '前の地域を踏破すると解放' : game.cleared[n] ? '再探索へ' : 'この地へ向かう'}</button></article>`).join('')}</div>
+    <p class="tiny muted">踏破後は、同じ敵を復活させずに素材を集めます。経験値は半分。日々の任務には、毎回確定の成果が残ります。</p>
+    ${result ? `<div style="max-width:650px;margin-top:25px">${compactResult(result)}</div>` : ''}`;
+}
+function portraitSvg(family, tier, cls = '') {
+  return `<svg class="${cls}" viewBox="0 0 215 280" role="img" aria-label="${esc(weaponName(family, Math.max(0, tier)))}を装備した灰の旅人">${knight(artWeapon(family, Math.max(0, tier)), true)}${tier > 1 ? `<path d="m60 112 20-7m52 0 21 10M85 158l23 8 22-9" fill="none" stroke="${tier > 3 ? '#e8b477' : '#b99b6e'}" stroke-width="2" opacity=".8"/>` : ''}</svg>`;
+}
+function renderEquipment() {
+  const id = selectedWeapon, family = WEAPONS.find(w => w.id === id), tier = game.tiers[id], owned = tier >= 0;
+  const cost = forgeCost(tier), can = game.iron >= cost.iron && game.ember >= cost.ember;
+  const equipped = game.equipped === id, targetTier = tier + 1, targetName = weaponName(id, targetTier);
+  $('page-equipment').innerHTML = `<div class="wide-title"><h1>自分の剣を、育てる。</h1><p>大剣も、双剣も。同じ強化段階なら総ダメージは同じ。好きな一振りを、何度でも鍛え続ける。</p></div>
+    <div class="equipment-grid"><div><div class="portrait ${lastForge?.weapon === game.equipped ? 'after-forge' : ''}">${portraitSvg(game.equipped, game.tiers[game.equipped], 'fullbody')}<div class="name">灰の旅人</div><p class="tiny muted">${game.titles.at(-1) || '焚き火を絶やさぬ者'}</p><div class="statrow"><div><b>${game.level}</b>レベル</div><div><b>${game.attack}</b>行動力1の総攻撃力</div><div><b>+${game.tiers[game.equipped]}</b>武器の強化</div></div><div class="bar exp" style="margin-top:20px"><span style="width:${game.xp % 50 / 50 * 100}%"></span></div><p class="tiny muted" style="margin-top:7px;text-align:right">${game.xp % 50} / 50 EXP</p></div>
+      <p class="tiny muted" style="margin-top:15px">装備中：《${weaponName(game.equipped, game.tiers[game.equipped])}》<br>攻撃力 = 16 ＋ レベル × 2 ＋ 強化段階 × 5</p></div>
+    <div><div class="weapon-selector">${WEAPONS.map(w => `<button class="weapon-select ${w.id === id ? 'active' : ''}" data-action="select-weapon" data-weapon="${w.id}">${w.name}<span>${game.tiers[w.id] < 0 ? '未鍛造' : '+' + game.tiers[w.id]} · ${w.id === game.equipped ? '装備中' : '比較・プレビュー'}</span></button>`).join('')}</div>
+      <article class="panel weapon-panel"><div class="between"><span class="tiny gold">${family.name} · ${family.hits === 1 ? '重い一撃' : '三連撃'}</span><span class="tiny muted">鉄片 ${game.iron} / 熾火 ${game.ember}</span></div><h2>《${owned ? weaponName(id, tier) : family.names[0]}》</h2><p class="description">${family.description}<br>${owned ? '同じ武器を強化すると、形・金属の輝き・攻撃力が変わる。' : '別系統の武器も低い素材コストで試せる。'}</p>
+      <div class="forge-preview"><div class="preview-person">${portraitSvg(id, Math.max(0, tier))}<small>${owned ? '現在' : '基本の姿'}</small><strong>${owned ? weaponName(id, tier) : '未鍛造'}</strong></div><span class="muted">${icon('arrow', 20)}</span><div class="preview-person after">${portraitSvg(id, targetTier)}<small>鍛造後</small><strong>${targetName}</strong></div></div>
+      <div class="costrow"><span>鉄片 ${game.iron} / ${cost.iron}</span><span>熾火 ${game.ember} / ${cost.ember}</span></div>
+      <button class="${can ? 'primary' : 'secondary'} full" style="width:100%" data-action="forge" data-weapon="${id}" ${can ? '' : 'disabled'}>${icon('hammer', 15)}${can ? owned ? '強化して装備する' : '鍛造して装備する' : '素材を集める · 鉄片あと ' + Math.max(0, cost.iron - game.iron) + (cost.ember > game.ember ? ' / 熾火あと ' + (cost.ember - game.ember) : '')}</button>
+      ${owned && !equipped ? `<button class="secondary" style="width:100%;margin-top:12px" data-action="equip" data-weapon="${id}">今の段階で装備する</button>` : owned ? '<p class="tiny muted" style="margin-top:13px;text-align:center">現在、装備中</p>' : ''}
+      ${lastForge?.weapon === id ? `<p class="tiny gold" style="margin-top:16px">《${lastForge.name}》を鍛造。次の任務から、この姿で進む。</p>` : ''}</article>
+    </div></div>`;
+}
+function allResults() { return [...(state.legacyResults || []), ...game.results]; }
+function resultsForDay(day) { return allResults().filter(r => r.day === day); }
+function dayAchievements(day) {
+  const results = resultsForDay(day), crafts = game.craftResults.filter(r => r.day === day);
+  return [
+    ...results.filter(r => r.breakthrough).map(r => r.victory ? REGIONS[r.region].name + 'を踏破' : r.encounter + 'を突破'),
+    ...crafts.map(c => '《' + c.name + '》を鍛造')
+  ];
+}
+function renderCamp() {
+  const records = allResults(), since = addDays(today(), -6);
+  const recent = records.filter(r => r.day >= since && r.day <= today());
+  const mainDays = Object.keys(state.main).filter(d => d >= since && d <= today());
+  const completedMainDays = new Set(records.filter(r => r.main).map(r => r.day));
+  const rate = mainDays.length ? Math.round(mainDays.filter(d => completedMainDays.has(d)).length / mainDays.length * 100) : 0;
+  const started = state.tasks.filter(t => t.firstStart && localDay(new Date(t.firstStart)) >= since);
+  const latency = started.length ? Math.round(started.reduce((n, t) => n + Math.max(0, t.firstStart - t.createdAt), 0) / started.length / 60000) : 0;
+  const days = Object.keys(state.daily).sort().reverse(), archived = state.tasks.filter(t => t.deleted);
+  $('page-camp').innerHTML = `<div class="wide-title"><h1>焚き火は、まだ消えていない。</h1><p>今日の成果を確かめ、明日の一歩を残す。休む日に失うものはありません。</p></div>
+    <div class="camp-grid"><div><section class="panel camp-card"><div class="section-head"><h2>本日の遠征</h2><button class="secondary" data-action="end-day">${state.daily[today()] ? '今日の成果を見る' : '今日はここまで'}</button></div><p class="tiny muted">主目標：${completedMainDays.has(today()) ? '達成' : state.main[today()] ? 'まだ途中' : '未設定'}<br>現実で果たしたこと：${resultsForDay(today()).length} 件</p>${days.slice(0, 7).map(d => `<div class="daily-record"><h3>${d} · 遠征終了</h3><p>${resultsForDay(d).map(r => esc(r.title)).join('、') || '今日は休息の日。'}${state.daily[d].tomorrow ? '<br>次の一歩：' + esc(state.daily[d].tomorrow) : ''}${state.daily[d].note ? '<br>' + esc(state.daily[d].note) : ''}</p></div>`).join('')}</section>
+      <section class="panel camp-card"><h2>世界に残った歩み</h2>${[[game.stages[0] > 0, '最初の街道を突破した'],[Math.max(game.tiers.great, game.tiers.dual) > 0, '鍛冶師が拠点に戻った'],[game.cleared[0], '灰の城門の烽火が灯った'],[game.cleared[1], '聖堂の鐘が再び響いた'],[game.cleared[2], '断崖に夜明けが戻った']].map(([yes, label]) => `<div class="camp-state ${yes ? '' : 'muted'}">${icon(yes ? 'fire' : 'camp', 17)}${label}${yes ? '' : ' · この先'}</div>`).join('')}</section>
+      <section class="panel camp-card"><h2>プロジェクトの工程</h2>${game.projects.length ? game.projects.map(p => `<div class="daily-record"><div class="between"><h3>${esc(p.name)}</h3><span class="tiny muted">${p.done} / ${p.total}</span></div><div class="bar exp" style="margin:12px 0"><span style="width:${p.done / p.total * 100}%"></span></div><p class="tiny gold">${p.done === p.total ? '称号：《' + esc(p.name) + 'を果たす者》' : '予定した工程を、一つずつ。'}</p></div>`).join('') : '<p class="tiny muted">任務の詳細に同じプロジェクト名を付けると、工程をまとめて確認できます。素材報酬は各工程で獲得し、親プロジェクトでは重複付与しません。</p>'}</section>
+      <section class="panel camp-card"><h2>直近7日の現実の歩み</h2><div class="metrics"><div class="metric"><b>${recent.length}</b>達成した任務</div><div class="metric"><b>${rate}%</b>主目標達成率 · ${mainDays.length}日分</div><div class="metric"><b>${started.length}</b>取りかかった任務</div><div class="metric"><b>${latency}分</b>登録から初回着手までの平均</div></div><p class="tiny muted" style="margin-top:13px">最初の地域は、1日3件ほどの任務で約1週間を仮の目安に調整しています。利用量で前後します。実際の効果は、重要な任務が進んだかで確かめてください。</p></section>
+    </div><div><section class="panel camp-card"><h2>設定とバックアップ</h2><div class="setting"><label for="soundSetting">音を有効にする<small>金属音・一撃と連撃・地域ごとの残響</small></label><input id="soundSetting" type="checkbox" ${state.settings.mute ? '' : 'checked'}></div><div class="setting"><label for="volumeSetting">音量</label><input id="volumeSetting" type="range" min="0" max="1" step="0.05" value="${state.settings.volume}"></div><div class="setting"><label for="motionSetting">動きを抑える<small>揺れと点滅を止め、演出を短縮</small></label><input id="motionSetting" type="checkbox" ${state.settings.reduced ? 'checked' : ''}></div><p class="tiny muted" style="margin:18px 0 14px">このブラウザに自動保存されます。別端末へ移る場合は、JSONを書き出して復元してください。同期機能はありません。</p><div class="flex" style="flex-wrap:wrap"><button class="secondary" data-action="export">${icon('download', 14)}書き出し</button><button class="secondary" data-action="import">${icon('upload', 14)}復元</button></div><p class="tiny muted" style="margin-top:13px">任務の内容もバックアップに含まれます。ダウンロードしたJSONは、ご自身で保管してください。</p></section>
+      <section class="panel camp-card"><h2>旅の記録</h2><div class="history">${[...records].reverse().slice(0, 40).map(r => `<div><span class="gold">${esc(r.day)} · ${r.main ? '主目標達成' : '任務達成'}${r.breakthrough ? ' · ' + esc(r.encounter) + '突破' : ''}</span><br>${esc(r.title)}<br><span class="muted">鉄片 +${r.iron || 0} / EXP +${r.xp || 0}${r.victory ? ' / 地域踏破' : ''}</span></div>`).join('') || '<p class="tiny muted">最初の任務が、この記録の始まりになる。</p>'}${(state.legacyLogs || []).map(l => '<div><span class="muted">旧版の記録</span><br>' + esc(l) + '</div>').join('')}</div></section>
+      <section class="panel camp-card"><h2>1週間の使い心地</h2><p class="tiny muted">任意の振り返り。回答はこのブラウザに残ります。</p><form id="feedbackForm"><label class="field" for="rewardRating">報酬を見る楽しさ</label><select id="rewardRating" name="reward">${[1,2,3,4,5].map(n => `<option value="${n}" ${n === 3 ? 'selected' : ''}>${n}${n === 1 ? ' · あまり感じない' : n === 5 ? ' · 次も見たい' : ''}</option>`).join('')}</select><label class="field" for="entryRating">入力の手間</label><select id="entryRating" name="entry">${[1,2,3,4,5].map(n => `<option value="${n}" ${n === 3 ? 'selected' : ''}>${n}${n === 1 ? ' · とても簡単' : n === 5 ? ' · 面倒' : ''}</option>`).join('')}</select><label class="field" for="feedbackNote">重要な任務は進みましたか？</label><textarea id="feedbackNote" name="note" maxlength="1000"></textarea><button class="secondary" style="margin-top:14px" type="submit">振り返りを残す</button></form>${(state.feedback || []).slice(-3).reverse().map(f => `<p class="tiny muted" style="margin-top:16px">${esc(f.day)} · 楽しさ ${esc(f.reward)}/5 · 手間 ${esc(f.entry)}/5<br>${esc(f.note)}</p>`).join('')}</section>
+      ${archived.length ? `<section class="panel camp-card"><h2>保管した任務</h2>${archived.map(t => `<div class="between" style="margin:12px 0"><span class="tiny">${esc(t.title)}</span><button class="ghost" data-action="restore-task" data-id="${esc(t.id)}">戻す</button></div>`).join('')}</section>` : ''}
+    </div></div>`;
+}
+function openTask(id) {
+  const form = $('taskForm'); form.reset();
+  form.elements.namedItem('id').value = id || '';
+  form.elements.namedItem('scheduled').value = today();
+  $('taskDetails').open = false;
+  const task = state.tasks.find(t => t.id === id);
+  if (task) {
+    for (const name of ['id','title','minutes','repeat','condition','step','due','scheduled','priority','project']) {
+      const input = form.elements.namedItem(name);
+      if (name === 'minutes' && ![...input.options].some(o => o.value === String(task.minutes))) input.add(new Option(task.minutes + '分', task.minutes));
+      input.value = task[name] ?? '';
+    }
+    form.elements.namedItem('energy').value = task.autoEnergy ? 'auto' : task.energy;
+    $('taskDetails').open = true;
+  }
+  $('taskDialogTitle').textContent = id ? '任務を編集' : '任務を記す';
+  updateRewardHint(); fillIcons($('taskDialog')); $('taskDialog').showModal();
+}
+function updateRewardHint() {
+  const f = $('taskForm'), minutes = Number(f.elements.namedItem('minutes').value);
+  const mode = f.elements.namedItem('energy').value, energy = mode === 'auto' ? energyFor(minutes) : Number(mode);
+  $('autoReward').textContent = `行動力 ${energy} を自動提案${mode !== 'auto' ? '（手動で変更中）' : ''}。詳細から変更できます。`;
+}
+function templateTask(name) {
+  const f = $('taskForm');
+  const templates = {
+    study: { title: '勉強を25分進める', minutes: 25, step: '教材を開き、最初の問題に取りかかる', condition: '25分取り組み、今回進めた範囲を記録する' },
+    laundry: { title: '洗濯をする', minutes: 10, step: '洗濯物を集める', condition: '洗濯物を洗濯機に入れ、運転を始める' },
+    mail: { title: '必要なメールに返信する', minutes: 5, step: '返信するメールを1通開く', condition: '返信文を見直して、送信する' }
+  };
+  const t = templates[name]; if (!t) return;
+  for (const k of ['title','minutes','step','condition']) f.elements.namedItem(k).value = t[k];
+  f.elements.namedItem('energy').value = 'auto'; updateRewardHint();
+}
+$('taskForm').addEventListener('change', updateRewardHint);
+$('taskForm').addEventListener('submit', event => {
+  event.preventDefault();
+  const data = Object.fromEntries(new FormData(event.target));
+  data.title = data.title.trim(); if (!data.title) return;
+  const minutes = Math.max(1, Math.min(240, Number(data.minutes) || 25));
+  const patch = { title: data.title, minutes, energy: data.energy === 'auto' ? energyFor(minutes) : Number(data.energy),
+    autoEnergy: data.energy === 'auto', repeat: data.repeat, condition: data.condition.trim(), step: data.step.trim(),
+    due: data.due, scheduled: data.scheduled, priority: Number(data.priority), project: data.project.trim() };
+  let task = state.tasks.find(t => t.id === data.id);
+  if (task) {
+    Object.assign(task, patch);
+    if (!done(task)) task.occurrence = task.scheduled || task.occurrence;
+  } else {
+    const id = uid();
+    task = { ...patch, id, seriesId: id, occurrence: data.scheduled || today(), createdAt: Date.now(), firstStart: null, importedDone: false, deleted: false };
+    state.tasks.push(task);
+    if (!state.main[today()] && task.scheduled === today()) state.main[today()] = id;
+  }
+  save(); $('taskDialog').close(); render(); toast('任務を記録しました。');
+});
+function startTask(id) {
+  const task = state.tasks.find(t => t.id === id);
+  if (!task || done(task) || superseded(task)) return;
+  if (!task.firstStart) task.firstStart = Date.now();
+  if (state.daily[today()]) state.daily[today()].reopened = true;
+  focus = { taskId: id, remaining: task.minutes * 60000, running: false, endAt: 0, showTimer: true };
+  save(); renderFocus(); $('focusOverlay').classList.add('visible');
+  setOutsideInert(true);
+  $('focusOverlay').querySelector('[data-action=complete]')?.focus();
+  clearInterval(focusTimer); focusTimer = setInterval(updateTimer, 500);
+}
+function setOutsideInert(value) {
+  for (const selector of ['main', 'header', 'nav']) document.querySelector(selector).inert = value;
+}
+function leaveFocus() {
+  focus = null; clearInterval(focusTimer);
+  $('focusOverlay').classList.remove('visible'); setOutsideInert(false); render();
+}
+function remaining() { return focus?.running ? Math.max(0, focus.endAt - Date.now()) : focus?.remaining || 0; }
+function renderFocus() {
+  const task = state.tasks.find(t => t.id === focus?.taskId); if (!task) return;
+  $('focusInner').innerHTML = `<span class="tiny gold">今は、この一歩だけ。</span><h2 id="focusTitle">${esc(task.title)}</h2><div class="first-step">${esc(task.step || '必要な資料や道具を開き、最初の一つに取りかかる。')}</div>${task.condition ? '<p>今回の完了条件：' + esc(task.condition) + '</p>' : ''}
+    <button class="ghost" data-action="toggle-timer">${icon('clock', 14)}${focus.showTimer ? 'タイマーを隠す' : 'タイマーを表示'}</button><div class="${focus.showTimer ? '' : 'hidden'}"><div class="timer" id="timerText"></div><button class="secondary" data-action="timer">${focus.running ? '一時停止' : '集中タイマーを始める'}</button></div>
+    <p class="focus-note" id="timerNote">時間だけでは完了しません。予定した工程まで進めてください。</p><button class="primary" data-action="complete" data-id="${esc(task.id)}">${icon('check', 16)}今回の工程を完了する</button><p class="focus-note">課題全体が未完成でも、この工程を果たせば達成です。</p>`;
+  updateTimer();
+}
+function updateTimer() {
+  if (!focus || !$('timerText')) return;
+  const seconds = Math.ceil(remaining() / 1000);
+  $('timerText').textContent = String(Math.floor(seconds / 60)).padStart(2,'0') + ':' + String(seconds % 60).padStart(2,'0');
+  if (seconds === 0 && focus.running) {
+    focus.running = false; focus.remaining = 0;
+    $('timerNote').textContent = '区切りの時間です。今回の成果を確かめてから、完了してください。';
+  }
+}
+function completeTask(id) {
+  const task = state.tasks.find(t => t.id === id);
+  if (!task || done(task) || superseded(task)) return;
+  const event = { id: uid(), type: 'complete', taskId: id, title: task.title, energy: task.energy,
+    main: state.main[today()] === id, day: today(), at: Date.now(), region: state.region, route: state.route };
+  state.events.push(event); lastResultSession = event.id;
+  save(); // Persist before any presentation or animation.
+  if (focus) leaveFocus(); else render();
+  const result = game.results.find(r => r.eventId === event.id);
+  if (view === 'tasks') window.scrollTo({ top: 0, behavior: state.settings.reduced ? 'instant' : 'smooth' });
+  if (result) { animationQueue.push(result); if (!animating) playNext(); }
+}
+function playNext() {
+  if (!animationQueue.length) { animating = false; return; }
+  animating = true;
+  const r = animationQueue.shift();
+  if (view !== 'tasks' || state.region !== r.region) { playNext(); return; }
+  const frame = { ...game, stages: [...game.stages], health: game.health.map(a => [...a]), tiers: { ...game.tiers }, cleared: [...game.cleared], equipped: r.weapon };
+  if (!r.repeat) { frame.stages[r.region] = r.encounterIndex; frame.health[r.region][r.encounterIndex] = r.beforeHp; frame.cleared[r.region] = false; }
+  frame.tiers[r.weapon] = r.tier;
+  $('battleScene').outerHTML = sceneBlock(frame);
+  const scene = $('battleScene'), message = $('animationMessage'), number = $('damageNumber');
+  scene.classList.remove('striking', 'dual'); void scene.offsetWidth;
+  if (r.damage) scene.classList.add('striking');
+  if (r.weapon === 'dual') scene.classList.add('dual');
+  message.classList.remove('hidden');
+  message.textContent = r.victory ? '闇に、道を開いた。' : r.cache ? '鍛造資材を見つけた。' : r.repeat ? '剣を育てる、次の素材。' : r.breakthrough ? r.encounter + 'を突破。' : r.weapon === 'dual' ? '三つの刃が、闇を裂く。' : 'その行動を、一撃に。';
+  number.textContent = r.weapon === 'dual' ? r.hits.join(' + ') : r.damage || '';
+  sound(r.victory ? 'victory' : r.cache ? 'forge' : 'strike', r.region);
+  if (r.weapon === 'dual' && r.damage) soundTimer = setTimeout(() => sound('strike', r.region), 270);
+  clearTimeout(animationTimer);
+  animationTimer = setTimeout(() => {
+    if (view === 'tasks' && state.region === r.region && $('battleScene')) $('battleScene').outerHTML = sceneBlock();
+    if (r.victory) toast(REGIONS[r.region].name + 'を踏破。次の景色が解放されました。');
+    playNext();
+  }, state.settings.reduced || matchMedia('(prefers-reduced-motion: reduce)').matches ? 150 : 2500);
+}
+function sound(kind, region = state.region) {
+  if (state.settings.mute) return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); audioCtx.resume();
+    const now = audioCtx.currentTime, notes = kind === 'victory' ? [110,146.83,220] : kind === 'forge' ? [294,147,73] : [85,68,56];
+    notes.forEach((hz, index) => {
+      const oscillator = audioCtx.createOscillator(), gain = audioCtx.createGain(), t = now + index * .1;
+      oscillator.type = kind === 'strike' ? 'triangle' : 'sine';
+      oscillator.frequency.setValueAtTime(hz * (1 + region * .12), t);
+      oscillator.frequency.exponentialRampToValueAtTime(hz * .6, t + .3);
+      gain.gain.setValueAtTime(.0001, t); gain.gain.exponentialRampToValueAtTime(Math.max(.0001, state.settings.volume * .25), t + .015);
+      gain.gain.exponentialRampToValueAtTime(.0001, t + .75);
+      oscillator.connect(gain); gain.connect(audioCtx.destination); oscillator.start(t); oscillator.stop(t + .8);
+    });
+  } catch (error) { /* Audio is optional. */ }
+}
+function confirmAction(title, message, callback) {
+  $('confirmTitle').textContent = title; $('confirmText').textContent = message;
+  confirmCallback = callback; $('confirmDialog').showModal();
+}
+function undoTask(id) {
+  const event = state.events.find(e => e.type === 'complete' && e.taskId === id);
+  if (!event) return;
+  confirmAction('完了を取り消しますか？', '素材・経験値・遭遇の突破を再計算します。後の戦闘結果も変わり、素材不足や前提不足になった強化は取り消されます。', () => {
+    state.events = state.events.filter(e => e.id !== event.id);
+    clearAnimation(); lastResultSession = null;
+    const invalid = new Set(replay(state).invalid);
+    state.events = state.events.filter(e => !invalid.has(e.id));
+    save(); render(); toast(invalid.size ? '完了を取り消し、成立しなくなった鍛造も戻しました。' : '完了と、その成果を取り消しました。');
+  });
+}
+function forge(id) {
+  if (!WEAPONS.some(w => w.id === id)) return;
+  const cost = forgeCost(game.tiers[id]);
+  if (game.iron < cost.iron || game.ember < cost.ember) return;
+  const tier = game.tiers[id] + 1;
+  state.events.push({ id: uid(), type: 'forge', weapon: id, targetTier: tier, day: today(), at: Date.now() });
+  lastForge = { weapon: id, name: weaponName(id, tier) }; selectedWeapon = id;
+  save(); render(); sound('forge'); toast('《' + lastForge.name + '》を鍛造して装備しました。');
+}
+function openEndDay() {
+  const day = today(), existing = state.daily[day], results = resultsForDay(day), achievements = dayAchievements(day);
+  $('endSummary').innerHTML = `<div class="summary-part"><h3>主目標</h3><p class="tiny">${results.some(r => r.main) ? '達成' : state.main[day] ? 'まだ途中。続きは明日でも大丈夫です。' : '今日は設定なし'}</p></div>
+    <div class="summary-part"><h3>現実で進めたこと</h3>${results.length ? '<ul>' + results.map(r => '<li>' + esc(r.title) + '</li>').join('') + '</ul>' : '<p class="tiny muted">今日は休息の日。装備や成長は失われません。</p>'}</div>
+    <div class="summary-part"><h3>冒険の成果</h3>${achievements.length ? '<ul>' + achievements.map(a => '<li>' + esc(a) + '</li>').join('') + '</ul>' : '<p class="tiny muted">' + (results.length ? '次の突破に向けた一撃と素材が残りました。' : '焚き火は、まだ消えていない。') + '</p>'}<p class="tiny gold" style="margin-top:10px">鉄片 +${results.reduce((n, r) => n + (r.iron || 0), 0)} / EXP +${results.reduce((n, r) => n + (r.xp || 0), 0)}</p></div>`;
+  $('endForm').reset(); $('tomorrowStep').value = existing?.tomorrow || ''; $('dayNote').value = existing?.note || '';
+  $('endDialog').showModal(); fillIcons($('endDialog'));
+}
+$('endForm').addEventListener('submit', event => {
+  event.preventDefault();
+  const form = new FormData(event.target), day = today(), tomorrow = String(form.get('tomorrow') || '').trim();
+  const record = { ...state.daily[day], tomorrow, note: String(form.get('note') || '').trim(), closedAt: Date.now(), reopened: false };
+  if (tomorrow && form.get('plan')) {
+    const nextDay = addDays(day, 1); let task = state.tasks.find(t => t.id === record.tomorrowTaskId);
+    if (task && !done(task)) { task.title = tomorrow; task.step = tomorrow; task.scheduled = nextDay; task.deleted = false; }
+    else if (!task) {
+      const id = uid(); task = { id, seriesId: id, title: tomorrow, step: tomorrow, condition: '', minutes: 25, energy: 2, autoEnergy: true, repeat: 'none', occurrence: nextDay, scheduled: nextDay, due: '', priority: 2, project: '', createdAt: Date.now(), firstStart: null, importedDone: false, deleted: false };
+      state.tasks.push(task); record.tomorrowTaskId = id;
+    }
+    if (task && !done(task)) state.main[nextDay] = task.id;
+  }
+  state.daily[day] = record;
+  save(); $('endDialog').close(); clearAnimation(); lastResultSession = null; render();
+  toast('本日の遠征終了。今日の歩みと、明日の一歩を残しました。');
+});
+function exportSave() {
+  EmberStorage.download('emberquest-save-' + today() + '.json', EmberStorage.serialize(state), 'application/json');
+  toast('JSONバックアップを書き出しました。');
+}
+$('importFile').addEventListener('change', async event => {
+  const file = event.target.files[0]; event.target.value = '';
+  if (!file) return;
+  if (file.size > 20 * 1024 * 1024) { toast('20MB以下のJSONバックアップを選んでください。'); return; }
+  try {
+    const next = EmberStorage.parse(await file.text());
+    confirmAction('バックアップから復元しますか？', next.tasks.filter(t => !t.deleted).length + '件の任務を読み込み、現在の進捗を置き換えます。必要なら先にJSONを書き出してください。', () => {
+      clearAnimation(); state = next; lastResultSession = null; lastForge = null; refreshRecurrence(); game = replay(state); selectedWeapon = game.equipped;
+      save(); render(); toast('任務・装備・遠征の記録を復元しました。');
+    });
+  } catch (error) { toast('復元できません：' + error.message); }
+});
+$('confirmNo').onclick = () => { confirmCallback = null; $('confirmDialog').close(); };
+$('confirmYes').onclick = () => { const callback = confirmCallback; confirmCallback = null; $('confirmDialog').close(); callback?.(); };
+$('confirmDialog').addEventListener('cancel', () => { confirmCallback = null; });
+
+document.addEventListener('click', event => {
+  const button = event.target.closest('[data-action]');
+  if (!button || button.disabled) return;
+  const action = button.dataset.action, id = button.dataset.id, task = state.tasks.find(t => t.id === id);
+  switch (action) {
+    case 'nav': navigate(button.dataset.view); break;
+    case 'add': openTask(); break;
+    case 'edit': openTask(id); break;
+    case 'template': templateTask(button.dataset.template); break;
+    case 'close-task': $('taskDialog').close(); break;
+    case 'main':
+      if (task && !done(task) && !superseded(task)) { state.main[today()] = id; task.scheduled = today(); if (state.daily[today()]) state.daily[today()].reopened = true; save(); render(); toast('今日の主目標に選びました。'); }
+      break;
+    case 'unmain': delete state.main[today()]; save(); render(); break;
+    case 'start': startTask(id); break;
+    case 'leave-focus': leaveFocus(); break;
+    case 'toggle-timer': if (focus) { focus.showTimer = !focus.showTimer; renderFocus(); } break;
+    case 'timer':
+      if (!focus) break;
+      if (focus.running) { focus.remaining = remaining(); focus.running = false; }
+      else { if (focus.remaining <= 0) focus.remaining = (state.tasks.find(t => t.id === focus.taskId)?.minutes || 25) * 60000; focus.endAt = Date.now() + focus.remaining; focus.running = true; }
+      renderFocus(); break;
+    case 'complete': completeTask(id); break;
+    case 'undo': undoTask(id); break;
+    case 'archive':
+      if (task) { task.deleted = true; if (state.main[today()] === id) delete state.main[today()]; save(); render(); toast(task.repeat === 'none' ? '任務を保管しました。拠点から戻せます。' : '任務を保管し、今後の繰り返しを止めました。'); }
+      break;
+    case 'restore-task': if (task) { task.deleted = false; refreshRecurrence(); save(); render(); } break;
+    case 'filter': filter = button.dataset.filter; showAll = false; renderHome(); break;
+    case 'show-all': showAll = true; renderHome(); break;
+    case 'route': state.route = button.dataset.route; save(); render(); break;
+    case 'region':
+      if (Number(button.dataset.region) <= game.unlocked) { clearAnimation(); state.region = Number(button.dataset.region); save(); render(); sound('victory'); toast(REGIONS[state.region].name + 'を次の進路に選びました。'); }
+      break;
+    case 'select-weapon': selectedWeapon = button.dataset.weapon; renderEquipment(); break;
+    case 'forge': forge(button.dataset.weapon); break;
+    case 'equip':
+      if (game.tiers[button.dataset.weapon] >= 0) { state.events.push({ id: uid(), type: 'equip', weapon: button.dataset.weapon, day: today(), at: Date.now() }); save(); render(); sound('forge'); toast('装備を変更しました。次の一撃から反映されます。'); }
+      break;
+    case 'mute': state.settings.mute = !state.settings.mute; save(); render(); if (!state.settings.mute) sound('forge'); break;
+    case 'end-day': openEndDay(); break;
+    case 'close-end': $('endDialog').close(); break;
+    case 'export': exportSave(); break;
+    case 'import': $('importFile').click(); break;
+  }
+});
+document.addEventListener('change', event => {
+  if (event.target.id === 'soundSetting') { state.settings.mute = !event.target.checked; save(); render(); sound('forge'); }
+  if (event.target.id === 'volumeSetting') { state.settings.volume = Number(event.target.value); save(); sound('forge'); }
+  if (event.target.id === 'motionSetting') { state.settings.reduced = event.target.checked; clearAnimation(); save(); render(); }
+});
+document.addEventListener('submit', event => {
+  if (event.target.id !== 'feedbackForm') return;
+  event.preventDefault(); const data = new FormData(event.target);
+  state.feedback.push({ day: today(), reward: Number(data.get('reward')), entry: Number(data.get('entry')), note: String(data.get('note') || '').slice(0,1000) });
+  save(); render(); toast('振り返りを残しました。');
+});
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && focus) leaveFocus();
+  if (event.key === 'Tab' && focus) {
+    const controls = [...$('focusOverlay').querySelectorAll('button:not(:disabled)')].filter(b => b.getClientRects().length);
+    const first = controls[0], last = controls.at(-1);
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  }
+});
+function refreshDay() {
+  if (today() !== lastDay) {
+    lastDay = today(); refreshRecurrence();
+    if (!focus) render();
+  }
+}
+setInterval(refreshDay, 30000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { updateTimer(); refreshDay(); } });
+refreshRecurrence(); render();
+if (loaded.notice) toast(loaded.notice);
+
+</script>
+</body>
+</html>

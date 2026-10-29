@@ -1,0 +1,22 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const { EmberGame:G } = require('../src/game.js');
+const { EmberLegacy:L } = require('../src/migration-v3.js');
+const saved = new Map();
+const context = vm.createContext({ EmberGame:G, EmberLegacy:L, Date, JSON, structuredClone,
+  localStorage:{getItem:k=>saved.get(k)||null,setItem:(k,v)=>saved.set(k,v)} });
+vm.runInContext(fs.readFileSync(require.resolve('../src/storage.js'),'utf8')+'\nglobalThis.storage = EmberStorage;', context);
+const storage=context.storage;
+assert.equal(storage.load().state.version,4);
+const s=G.fresh();s.daily['2026-10-29']={tomorrow:'考察を書く',note:'一つ進めた',closedAt:1};
+s.feedback=[{day:'2026-10-29',reward:4,entry:2,note:'入力が短い'}];
+storage.save(s);const loaded=storage.load();assert.equal(loaded.state.daily['2026-10-29'].tomorrow,'考察を書く');
+const backup=storage.serialize(s),parsed=storage.parse(backup);assert.equal(parsed.feedback[0].note,'入力が短い');
+assert.throws(()=>storage.parse('{broken JSON'));
+assert.throws(()=>storage.parse(JSON.stringify({...s,events:[{id:'x',type:'forge',weapon:'great',targetTier:2,day:'bad'}]})));
+assert.throws(()=>storage.parse(JSON.stringify({...s,settings:{...s.settings,volume:999}})));
+const v3=L.fresh();v3.base.iron=19;v3.base.ember=3;
+const upgraded=storage.parse(JSON.stringify({data:v3}));assert.equal(upgraded.version,4);assert.equal(upgraded.base.iron,19);
+saved.set(storage.KEY,'{broken');const failed=storage.load();assert(failed.failed);assert.equal(saved.get(storage.KEY),'{broken','failed load must preserve the original data');
+console.log('PASS: persistence, JSON round trip, day-end records, feedback, migration and corrupt-data rejection');
